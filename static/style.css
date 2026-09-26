@@ -9,20 +9,35 @@ body {
   background-color: #000000;
 }
 .title{
-font-size: 25px;
+font-size: 30px;
 margin-top: 100px;
 }
 .slime{
-  width: 100px;
+  width: 120px;
   height:auto;
-  margin-top: 100px;
+  display: block;
+  margin: 100px auto 0;
 }
 .menu{
   width: 50px;
-  height:auto;
+  height: 50px;;
   position: absolute;
   top: 20px;
   right: 20px;
+  cursor: pointer;
+  
+}
+.menu:hover{
+  width: 46px;
+  height: 46px;
+  top: 22px;
+  right: 22px;
+}
+
+.box{
+  width: 800px;
+  height:250px;
+  margin-top: 75px;
 }
 
 @media (max-width: 600px) {
