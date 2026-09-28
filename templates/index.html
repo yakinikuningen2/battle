@@ -5,18 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BATTLE!</title>
   <link rel="stylesheet" href="../../static/style.css">
+  <script src="../static/script.js" defer></script>
 </head>
 <body>
-  <p class="title">スライム　があらわれた!</p>
-  <img src = "../static/character_monster_slime_green.png" alt = "スライム" class = "slime">
-  <img src = "../static/sozai_cman_jp_20260921201755.png" alt = "メニュー" class = "menu">
+  <p class="title">すらいむ　があらわれた!</p>
+  <img src="../static/character_monster_slime_green.png" alt="すらいむ" class="slime">
+  <img src = "../static/sozai_cman_jp_20260921201755.png" alt = "めにゅー" class = "menu">
   <div class = "container">
-    <img src = "../static/25351742.png" alt = "ボックス" class = "box">
-    <img src = "../static/25351742.png" class = "textbox">
+    <div class="player-status" aria-label="ゆうしゃの じょうたい">
+      <span>ゆうしゃ</span>
+      <span>HP <span id="player-hp">30</span> / 30</span>
+      <span>MP <span id="player-mp">10</span> / 10</span>
+    </div>
+    <img src = "../static/25351742.png" alt = "ぼっくす" class = "box">
+    <img src = "../static/25351742.png" class = "textbox" alt="">
+    <div class="message">
+      <p id="message-text" role="status" aria-live="polite"></p>
+      <button type="button" id="slime-target" hidden disabled>すらいむ</button>
+    </div>
     <div class = "command">
-      <p class = "battle">たたかう</p>
-      <p class = "item">あいてむ</p>
-      <p class = "flee">にげる</p>
+      <button type="button" class="battle">たたかう</button>
+      <button type="button" class="item">あいてむ</button>
+      <button type="button" class="flee">にげる</button>
     </div>
   </div>
 </body>

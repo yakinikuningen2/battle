@@ -46,6 +46,19 @@ body {
   height: 100%;
   object-fit: contain;
 }
+.player-status{
+  position: absolute;
+  bottom: calc(50% + 85px);
+  left: 0;
+  display: flex;
+  gap: 24px;
+  white-space: nowrap;
+  font-size: 22px;
+}
+.command button:disabled{
+  cursor: default;
+  opacity: 0.5;
+}
 .command{
   font-size: 22px;
   position: absolute;
@@ -53,19 +66,53 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-.command p{
+.command button{
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
   margin: 18px;
   cursor: pointer;
 }
-.command p:hover{
+.command button:hover{
   font-size: 20px;
 }
 
-.textbox{
+.textbox, .message{
   width: 150%;
-  height: 350px;
-  object-fit: contain;
+  height: 140.625px; /* 隣の画像の表示高: 250px × 1440 / 2560 */
+  object-fit: fill;
   position:absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.message{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  font-size: 22px;
+  line-height: 1.5;
+}
+.message p{
+  margin: 0;
+}
+.message button{
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
 @media (max-width: 600px) {
