@@ -131,6 +131,14 @@ body {
 .message p{
   margin: 0;
 }
+.message:has(#defeat-restart:not([hidden])) {
+  font-size: 18px;
+  gap: 0;
+}
+.message button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
 .message button{
   padding: 0;
   border: 0;
@@ -175,19 +183,19 @@ body {
   min-height: 0;
   padding: 28px;
 }
-#menu-screen[open]:has(#monster-book:not([hidden]) #monster-detail:not([hidden]), #item-book:not([hidden]) #item-book-detail:not([hidden]) #item-book-acquisition[hidden]) {
+#menu-screen[open]:has(#monster-book:not([hidden]) #monster-detail:not([hidden]), #item-book:not([hidden]) #item-book-detail:not([hidden])) {
   display: flex;
   flex-direction: column;
   height: min(560px, calc(100dvh - 32px));
 }
 #monster-book:not([hidden]):has(#monster-detail:not([hidden])),
-#item-book:not([hidden]):has(#item-book-detail:not([hidden]) #item-book-acquisition[hidden]) {
+#item-book:not([hidden]):has(#item-book-detail:not([hidden])) {
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
 }
 #monster-book:has(#monster-detail:not([hidden])) #monster-book-back,
-#item-book:has(#item-book-detail:not([hidden]) #item-book-acquisition[hidden]) #item-book-back {
+#item-book:has(#item-book-detail:not([hidden])) #item-book-back {
   align-self: center;
   margin-top: auto;
 }
@@ -217,18 +225,26 @@ body {
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
-  width: 250px;
+  width: 320px;
   padding: 20px;
   white-space: normal;
 }
+#equipment-screen .equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
 #equipment-screen h2 {
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   font-size: 22px;
 }
-.equipment-slots {
-  min-height: 80px;
+.equipment-slots,
+.armor-slot {
+  min-height: 64px;
 }
 #equipped-sword {
+  position: relative;
+  top: 16px;
   cursor: pointer;
 }
 .menu-choices {
@@ -258,10 +274,6 @@ body {
 }
 .item-book-image.undiscovered {
   opacity: 0.3;
-}
-#item-book-acquisition {
-  margin-top: 16px;
-  margin-bottom: 28px;
 }
 #menu-options button {
   display: block;

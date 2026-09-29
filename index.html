@@ -17,10 +17,26 @@
     <div class="player-status" aria-label="ゆうしゃの じょうたい">
       <div class="player-equipment">
       <button type="button" class="player-name" aria-controls="equipment-screen" aria-expanded="false">ゆうしゃ</button>
-      <section id="equipment-screen" aria-labelledby="equipment-title" hidden>
-        <h2 id="equipment-title">そうび</h2>
-        <div class="equipment-slots" aria-label="そうびなし">
-          <img id="equipped-sword" src="static/sword_shortsword_brown.png" alt="けん" class="item-image" draggable="true" hidden>
+      <section id="equipment-screen" aria-label="そうび" hidden>
+        <div class="equipment-grid">
+          <div class="equipment-group">
+            <h2 id="equipment-title">ぶき</h2>
+            <div id="equipped-weapon" class="equipment-slots" role="group" aria-label="ぶき そうびなし"></div>
+          </div>
+          <div class="equipment-group">
+            <h2 id="head-title">あたま</h2>
+            <div id="equipped-head" class="armor-slot" role="group" aria-label="あたま そうびなし">
+              <img id="equipped-sword" src="static/tsurugi_bronze_blue.png" alt="けん" class="item-image" draggable="true" hidden>
+            </div>
+          </div>
+          <div class="equipment-group">
+            <h2 id="body-title">からだ</h2>
+            <div id="equipped-body" class="armor-slot" role="group" aria-label="からだ そうびなし"></div>
+          </div>
+          <div class="equipment-group">
+            <h2 id="feet-title">あし</h2>
+            <div id="equipped-feet" class="armor-slot" role="group" aria-label="あし そうびなし"></div>
+          </div>
         </div>
         <button type="button" id="equipment-close">とじる</button>
       </section>
@@ -32,6 +48,9 @@
     <img src = "static/25351742.png" class = "textbox" alt="">
     <div class="message">
       <p id="message-text" role="status" aria-live="polite"></p>
+      <div id="defeat-restart" hidden>
+        <button type="button" id="defeat-restart-yes">やりなおす</button>
+      </div>
       <button type="button" id="slime-target" hidden disabled>すらいむ<span id="slime-hp">HP 50 / 50</span></button>
     </div>
     <div class = "command">
@@ -41,10 +60,10 @@
     </div>
     <section id="item-panel" class="item-panel" aria-label="あいてむらん" hidden>
       <button type="button" id="sword-item" class="item-choice" data-item="sword" draggable="true" aria-label="けん">
-        <img src="static/sword_shortsword_brown.png" alt="" class="item-image" draggable="false">
+        <img src="static/tsurugi_bronze_blue.png" alt="" class="item-image" draggable="false">
       </button>
       <button type="button" id="use-yakuso" class="item-choice" data-item="yakuso" draggable="true" aria-label="やくそうをつかう。HPを3かいふく。みずいろのそざいにドラッグしてごうせい">
-        <img src="static/yakuso_01.png" alt="" class="item-image" draggable="false">
+        <img src="static/yakuso_02.png" alt="" class="item-image" draggable="false">
       </button>
       <button type="button" id="blue-material" class="item-choice" data-item="material" draggable="true" aria-label="みずいろのそざい。たんどくではつかえない。やくそうにドラッグしてごうせい">
         <img src="static/portion_01_lightblue_01.png" alt="" class="item-image" draggable="false">
@@ -57,9 +76,9 @@
   <dialog id="menu-screen" aria-labelledby="menu-title">
     <h2 id="menu-title">めにゅー</h2>
     <div id="menu-options">
+      <button type="button" id="menu-monster-book">もんすたーずかん</button>
+      <button type="button" id="menu-item-book">あいてむずかん</button>
       <button type="button" id="menu-restart">やりなおす</button>
-      <button type="button" id="menu-monster-book">モンスターずかん</button>
-      <button type="button" id="menu-item-book">アイテムずかん</button>
     </div>
     <div id="monster-book" hidden>
       <div id="monster-list">
@@ -77,9 +96,12 @@
     <div id="item-book" hidden>
       <div id="item-book-list">
         <button type="button" aria-label="けん" data-description="あたえるだめーじがあがる。">
-          <img src="static/sword_shortsword_brown.png" alt="" class="item-book-image">
+          <img src="static/tsurugi_bronze_blue.png" alt="" class="item-book-image">
         </button>
         <button type="button" aria-label="やくそう" data-description="HPを3かいふくする。">
+          <img src="static/yakuso_02.png" alt="" class="item-book-image">
+        </button>
+        <button type="button" aria-label="まりょくのくさ" data-item="magicHerb" data-description="">
           <img src="static/yakuso_01.png" alt="" class="item-book-image">
         </button>
         <button type="button" aria-label="みず" data-description="ただのみず。">
@@ -88,15 +110,17 @@
         <button type="button" aria-label="かいふくやく" data-item="potion" data-description="HPを10かいふくする。">
           <img src="static/portion_01_yellowgreen.png" alt="" class="item-book-image">
         </button>
-        <button type="button" aria-label="ポーション" data-item="mpPotion" data-description="MPをかいふくする。">
+        <button type="button" aria-label="まほうやく" data-item="mpPotion" data-description="MPをかいふくする。">
           <img src="static/portion_01_pink.png" alt="" class="item-book-image">
+        </button>
+        <button type="button" aria-label="まけん" data-description="" data-item="magicSword">
+          <img src="static/tsurugi_bronze_sabi_blue.png" alt="" class="item-book-image">
         </button>
       </div>
       <section id="item-book-detail" aria-labelledby="item-book-name" hidden>
         <h3 id="item-book-name"></h3>
-        <img id="item-book-detail-image" src="static/yakuso_01.png" alt="" class="item-book-image">
+        <img id="item-book-detail-image" src="static/yakuso_02.png" alt="" class="item-book-image">
         <p id="item-book-description"></p>
-        <button type="button" id="item-book-acquisition" hidden>にゅうしゅほうほう</button>
       </section>
       <button type="button" id="item-book-back">もどる</button>
     </div>

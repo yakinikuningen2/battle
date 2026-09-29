@@ -1,4 +1,6 @@
 const messageText = document.getElementById('message-text');
+const defeatRestart = document.getElementById('defeat-restart');
+const defeatRestartYes = document.getElementById('defeat-restart-yes');
 const slimeTarget = document.getElementById('slime-target');
 const battleButton = document.querySelector('.battle');
 const itemButton = document.querySelector('.item');
@@ -39,7 +41,6 @@ const itemBookList = document.getElementById('item-book-list');
 const itemBookDetail = document.getElementById('item-book-detail');
 const itemBookName = document.getElementById('item-book-name');
 const itemBookDescription = document.getElementById('item-book-description');
-const itemBookAcquisition = document.getElementById('item-book-acquisition');
 const itemBookImage = document.getElementById('item-book-detail-image');
 const itemBookBack = document.getElementById('item-book-back');
 const itemBookEntries = itemBookList.querySelectorAll('button');
@@ -53,14 +54,20 @@ const materialButton = document.getElementById('blue-material');
 const usePotionButton = document.getElementById('use-potion');
 const swordButton = document.getElementById('sword-item');
 const equippedSword = document.getElementById('equipped-sword');
-const equipmentSlots = document.querySelector('.equipment-slots');
+const equipmentSlots = {
+  weapon: document.getElementById('equipped-weapon'),
+  head: document.getElementById('equipped-head'),
+  body: document.getElementById('equipped-body'),
+  feet: document.getElementById('equipped-feet'),
+};
+const slotNames = { weapon: 'ぶき', head: 'あたま', body: 'からだ', feet: 'あし' };
 const itemChoices = [swordButton, useYakusoButton, materialButton, usePotionButton];
 const inventory = { yakuso: 1, material: 1, potion: 0, sword: 0 };
-const equipment = { weapon: 'sword' };
+const equipment = { swordSlot: 'head' };
 const discoveredItems = new Set();
 
 function isUndiscoveredItem(button) {
-  return ['potion', 'mpPotion'].includes(button.dataset.item)
+  return ['potion', 'mpPotion', 'magicSword', 'magicHerb'].includes(button.dataset.item)
     && !discoveredItems.has(button.dataset.item);
 }
 
@@ -114,6 +121,8 @@ function performAction(message) {
         turn = 'finished';
         messageText.textContent = 'ゆうしゃは たおれてしまった！';
         restartButton.disabled = false;
+        defeatRestart.hidden = false;
+        defeatRestartYes.focus();
         return;
       }
       turn = 'player';
@@ -169,7 +178,7 @@ slimeTarget.addEventListener('click', () => {
     performAction('ゆうしゃの まほう！ すらいむに 10のだめーじ！');
     return;
   }
-  const damage = equipment.weapon === 'sword' ? 5 : 1;
+  const damage = equipment.swordSlot === 'weapon' ? 5 : 1;
   slime.hp = Math.max(0, slime.hp - damage);
   performAction(`ゆうしゃの こうげき！ すらいむに ${damage}のだめーじ！`);
 });
@@ -283,7 +292,7 @@ function canCombine(target) {
 });
 
 equippedSword.addEventListener('dragstart', (event) => {
-  if (turn !== 'player' || equipmentScreen.hidden || equipment.weapon !== 'sword') {
+  if (turn !== 'player' || equipmentScreen.hidden || !equipment.swordSlot) {
     event.preventDefault();
     return;
   }
@@ -296,7 +305,7 @@ equippedSword.addEventListener('dragend', clearItemDrag);
 
 function canUnequipSword() {
   return turn === 'player' && !itemPanel.hidden && !equipmentScreen.hidden
-    && draggedItem === 'equipped-sword' && equipment.weapon === 'sword';
+    && draggedItem === 'equipped-sword' && equipment.swordSlot !== null;
 }
 
 itemPanel.addEventListener('dragover', (event) => {
@@ -308,7 +317,7 @@ itemPanel.addEventListener('dragover', (event) => {
 itemPanel.addEventListener('drop', (event) => {
   if (!canUnequipSword()) return;
   event.preventDefault();
-  equipment.weapon = null;
+  equipment.swordSlot = null;
   inventory.sword += 1;
   clearItemDrag();
   updateInventory();
@@ -316,29 +325,35 @@ itemPanel.addEventListener('drop', (event) => {
 });
 
 function updateEquipment() {
-  equippedSword.hidden = equipment.weapon !== 'sword';
-  equipmentSlots.setAttribute('aria-label', equipment.weapon === 'sword' ? 'けんをそうび' : 'そうびなし');
+  equippedSword.hidden = equipment.swordSlot === null;
+  Object.entries(equipmentSlots).forEach(([slotName, slot]) => {
+    const hasSword = equipment.swordSlot === slotName;
+    slot.setAttribute('aria-label', `${slotNames[slotName]} ${hasSword ? 'けんをそうび' : 'そうびなし'}`);
+    if (hasSword) slot.append(equippedSword);
+  });
 }
 
-function canEquipSword() {
-  return turn === 'player' && !itemPanel.hidden && !equipmentScreen.hidden
-    && draggedItem === 'sword' && inventory.sword > 0 && equipment.weapon === null;
+function canPlaceSword(slotName) {
+  if (turn !== 'player' || equipmentScreen.hidden || equipment.swordSlot === slotName) return false;
+  return (draggedItem === 'sword' && !itemPanel.hidden && inventory.sword > 0 && equipment.swordSlot === null)
+    || (draggedItem === 'equipped-sword' && equipment.swordSlot !== null);
 }
 
-equipmentScreen.addEventListener('dragover', (event) => {
-  if (!canEquipSword()) return;
-  event.preventDefault();
-  event.dataTransfer.dropEffect = 'move';
-});
-
-equipmentScreen.addEventListener('drop', (event) => {
-  if (!canEquipSword()) return;
-  event.preventDefault();
-  inventory.sword -= 1;
-  equipment.weapon = 'sword';
-  clearItemDrag();
-  updateInventory();
-  updateEquipment();
+Object.entries(equipmentSlots).forEach(([slotName, slot]) => {
+  slot.addEventListener('dragover', (event) => {
+    if (!canPlaceSword(slotName)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  });
+  slot.addEventListener('drop', (event) => {
+    if (!canPlaceSword(slotName)) return;
+    event.preventDefault();
+    if (draggedItem === 'sword') inventory.sword -= 1;
+    equipment.swordSlot = slotName;
+    clearItemDrag();
+    updateInventory();
+    updateEquipment();
+  });
 });
 
 restartButton.addEventListener('click', () => {
@@ -361,7 +376,7 @@ menuMonsterBook.addEventListener('click', () => {
   turn = 'monster-book';
   menuOptions.hidden = true;
   menuStatus.textContent = '';
-  menuTitle.textContent = 'モンスターずかん';
+  menuTitle.textContent = 'もんすたーずかん';
   monsterBook.hidden = false;
   monsterList.hidden = false;
   monsterDetail.hidden = true;
@@ -373,6 +388,8 @@ monsterSelectSlime.addEventListener('click', () => {
   turn = 'monster-detail';
   monsterList.hidden = true;
   monsterDetail.hidden = false;
+  menuTitle.hidden = true;
+  menuScreen.setAttribute('aria-labelledby', 'monster-name');
   monsterBookBack.focus();
 });
 
@@ -380,6 +397,8 @@ function closeMonsterBook() {
   if (turn === 'monster-detail') {
     monsterDetail.hidden = true;
     monsterList.hidden = false;
+    menuTitle.hidden = false;
+    menuScreen.setAttribute('aria-labelledby', 'menu-title');
     turn = 'monster-book';
     monsterSelectSlime.focus();
     return;
@@ -399,7 +418,7 @@ menuItemBook.addEventListener('click', () => {
   turn = 'item-book';
   menuOptions.hidden = true;
   menuStatus.textContent = '';
-  menuTitle.textContent = 'アイテムずかん';
+  menuTitle.textContent = 'あいてむずかん';
   itemBook.hidden = false;
   itemBookList.hidden = false;
   itemBookDetail.hidden = true;
@@ -412,13 +431,14 @@ itemBookEntries.forEach((button) => {
     selectedItemBookEntry = button;
     itemBookName.textContent = button.getAttribute('aria-label');
     const undiscovered = isUndiscoveredItem(button);
-    itemBookAcquisition.hidden = !undiscovered;
     itemBookDescription.textContent = undiscovered ? 'まだてにいれていません' : button.dataset.description;
     itemBookImage.classList.toggle('undiscovered', undiscovered);
     itemBookImage.src = button.querySelector('img').getAttribute('src');
     itemBookImage.alt = itemBookName.textContent;
     itemBookList.hidden = true;
     itemBookDetail.hidden = false;
+    menuTitle.hidden = true;
+    menuScreen.setAttribute('aria-labelledby', 'item-book-name');
     turn = 'item-book-detail';
     itemBookBack.focus();
   });
@@ -428,6 +448,8 @@ function closeItemBook() {
   if (turn === 'item-book-detail') {
     itemBookDetail.hidden = true;
     itemBookList.hidden = false;
+    menuTitle.hidden = false;
+    menuScreen.setAttribute('aria-labelledby', 'menu-title');
     turn = 'item-book';
     selectedItemBookEntry.focus();
     return;
@@ -454,6 +476,8 @@ menuRestart.addEventListener('click', () => {
 function closeMenu() {
   if (!menuScreen.open) return;
   menuScreen.close();
+  menuTitle.hidden = false;
+  menuScreen.setAttribute('aria-labelledby', 'menu-title');
   itemBook.hidden = true;
   monsterBook.hidden = true;
   restartConfirmation.hidden = true;
@@ -484,26 +508,39 @@ restartYes.addEventListener('click', () => {
   if (turn !== 'confirming-restart') return;
   restartConfirmation.hidden = true;
   menuOptions.hidden = false;
+  resetBattle();
+  turnBeforeRestart = 'player';
+  turn = 'menu';
+  menuStatus.textContent = 'はじめから やりなおしました！';
+  menuClose.focus();
+});
+
+defeatRestartYes.addEventListener('click', () => {
+  if (turn !== 'finished' || defeatRestart.hidden) return;
+  resetBattle();
+  battleButton.focus();
+});
+
+function resetBattle() {
+  defeatRestart.hidden = true;
   restartButton.disabled = false;
   endTargetSelection();
   closeItems();
+  if (!equipmentScreen.hidden) closeEquipment();
   player.hp = player.maxHp;
   slime.hp = slime.maxHp;
   player.mp = 0;
   Object.assign(inventory, { yakuso: 1, material: 1, potion: 0, sword: 0 });
   discoveredItems.clear();
   updateItemBook();
-  equipment.weapon = 'sword';
+  equipment.swordSlot = 'head';
   updateEquipment();
-  turnBeforeRestart = 'player';
-  turn = 'menu';
+  turn = 'player';
   messageText.textContent = '';
   commandButtons.forEach((button) => { button.disabled = false; });
   updateStatus();
   updateInventory();
-  menuStatus.textContent = 'はじめから やりなおしました！';
-  menuClose.focus();
-});
+}
 
 updateStatus();
 updateInventory();
