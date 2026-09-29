@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BATTLE!</title>
-  <link rel="stylesheet" href="../../static/style.css">
-  <script src="../static/script.js" defer></script>
+  <link rel="stylesheet" href="static/style.css">
+  <script src="static/script.js" defer></script>
 </head>
 <body>
   <p class="title">すらいむ　があらわれた!</p>
-  <img src="../static/character_monster_slime_green.png" alt="すらいむ" class="slime">
+  <img src="static/character_monster_slime_green.png" alt="すらいむ" class="slime">
   <button type="button" class="menu" aria-label="めにゅー" aria-controls="menu-screen" aria-expanded="false">
-    <img src="../static/sozai_cman_jp_20260921201755.png" alt="">
+    <img src="static/sozai_cman_jp_20260921201755.png" alt="">
   </button>
   <div class = "container">
     <div class="player-status" aria-label="ゆうしゃの じょうたい">
@@ -19,8 +19,8 @@
       <span>HP <span id="player-hp">30</span> / 30</span>
       <span>MP <span id="player-mp">10</span> / 10</span>
     </div>
-    <img src = "../static/25351742.png" alt = "ぼっくす" class = "box">
-    <img src = "../static/25351742.png" class = "textbox" alt="">
+    <img src = "static/25351742.png" alt = "ぼっくす" class = "box">
+    <img src = "static/25351742.png" class = "textbox" alt="">
     <div class="message">
       <p id="message-text" role="status" aria-live="polite"></p>
       <button type="button" id="slime-target" hidden disabled>すらいむ</button>
@@ -32,13 +32,13 @@
     </div>
     <section id="item-panel" class="item-panel" aria-label="あいてむらん" hidden>
       <button type="button" id="use-yakuso" class="item-choice" data-item="yakuso" draggable="true" aria-label="やくそうをつかう。HPを10かいふく。みずいろのそざいにドラッグしてごうせい">
-        <img src="../static/yakuso_01.png" alt="" class="item-image" draggable="false">
+        <img src="static/yakuso_01.png" alt="" class="item-image" draggable="false">
       </button>
       <button type="button" id="blue-material" class="item-choice" data-item="material" draggable="true" aria-label="みずいろのそざい。たんどくではつかえない。やくそうにドラッグしてごうせい">
-        <img src="../static/portion_01_lightblue_01.png" alt="" class="item-image" draggable="false">
+        <img src="static/portion_01_lightblue_01.png" alt="" class="item-image" draggable="false">
       </button>
       <button type="button" id="use-potion" class="item-choice" data-item="potion" aria-label="かいふくやくをつかう。HPを20かいふく" hidden>
-        <img src="../static/portion_01_yellowgreen.png" alt="" class="item-image" draggable="false">
+        <img src="static/portion_01_yellowgreen.png" alt="" class="item-image" draggable="false">
       </button>
     </section>
   </div>
