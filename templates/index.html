@@ -10,7 +10,9 @@
 <body>
   <p class="title">すらいむ　があらわれた!</p>
   <img src="../static/character_monster_slime_green.png" alt="すらいむ" class="slime">
-  <img src = "../static/sozai_cman_jp_20260921201755.png" alt = "めにゅー" class = "menu">
+  <button type="button" class="menu" aria-label="めにゅー" aria-controls="menu-screen" aria-expanded="false">
+    <img src="../static/sozai_cman_jp_20260921201755.png" alt="">
+  </button>
   <div class = "container">
     <div class="player-status" aria-label="ゆうしゃの じょうたい">
       <span>ゆうしゃ</span>
@@ -24,10 +26,38 @@
       <button type="button" id="slime-target" hidden disabled>すらいむ</button>
     </div>
     <div class = "command">
-      <button type="button" class="battle">たたかう</button>
-      <button type="button" class="item">あいてむ</button>
-      <button type="button" class="flee">にげる</button>
+      <button type="button" class="battle">こうげき</button>
+      <button type="button" class="magic">まほう</button>
+      <button type="button" class="item" aria-expanded="false" aria-controls="item-panel">あいてむ</button>
     </div>
+    <section id="item-panel" class="item-panel" aria-label="あいてむらん" hidden>
+      <button type="button" id="use-yakuso" class="item-choice" data-item="yakuso" draggable="true" aria-label="やくそうをつかう。HPを10かいふく。みずいろのそざいにドラッグしてごうせい">
+        <img src="../static/yakuso_01.png" alt="" class="item-image" draggable="false">
+      </button>
+      <button type="button" id="blue-material" class="item-choice" data-item="material" draggable="true" aria-label="みずいろのそざい。たんどくではつかえない。やくそうにドラッグしてごうせい">
+        <img src="../static/portion_01_lightblue_01.png" alt="" class="item-image" draggable="false">
+      </button>
+      <button type="button" id="use-potion" class="item-choice" data-item="potion" aria-label="かいふくやくをつかう。HPを20かいふく" hidden>
+        <img src="../static/portion_01_yellowgreen.png" alt="" class="item-image" draggable="false">
+      </button>
+    </section>
   </div>
+  <dialog id="menu-screen" aria-labelledby="menu-title">
+    <h2 id="menu-title">めにゅー</h2>
+    <div id="menu-options">
+      <button type="button" id="menu-restart">やりなおす</button>
+      <button type="button" id="menu-monster-book">モンスターずかん</button>
+      <button type="button" id="menu-item-book">アイテムずかん</button>
+    </div>
+    <div id="restart-confirmation" role="group" aria-labelledby="restart-question" hidden>
+      <p id="restart-question">やりなおしますか？</p>
+      <div class="menu-choices">
+        <button type="button" id="restart-yes">はい</button>
+        <button type="button" id="restart-no">いいえ</button>
+      </div>
+    </div>
+    <p id="menu-status" role="status" aria-live="polite"></p>
+    <button type="button" id="menu-close">とじる</button>
+  </dialog>
 </body>
 </html>
