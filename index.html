@@ -15,15 +15,24 @@
   </button>
   <div class = "container">
     <div class="player-status" aria-label="ゆうしゃの じょうたい">
-      <span>ゆうしゃ</span>
-      <span>HP <span id="player-hp">30</span> / 30</span>
-      <span>MP <span id="player-mp">10</span> / 10</span>
+      <div class="player-equipment">
+      <button type="button" class="player-name" aria-controls="equipment-screen" aria-expanded="false">ゆうしゃ</button>
+      <section id="equipment-screen" aria-labelledby="equipment-title" hidden>
+        <h2 id="equipment-title">そうび</h2>
+        <div class="equipment-slots" aria-label="そうびなし">
+          <img id="equipped-sword" src="static/sword_shortsword_brown.png" alt="けん" class="item-image" draggable="true" hidden>
+        </div>
+        <button type="button" id="equipment-close">とじる</button>
+      </section>
+      </div>
+      <span>HP <span id="player-hp">10</span> / 10</span>
+      <span>MP <span id="player-mp">0</span> / 10</span>
     </div>
     <img src = "static/25351742.png" alt = "ぼっくす" class = "box">
     <img src = "static/25351742.png" class = "textbox" alt="">
     <div class="message">
       <p id="message-text" role="status" aria-live="polite"></p>
-      <button type="button" id="slime-target" hidden disabled>すらいむ</button>
+      <button type="button" id="slime-target" hidden disabled>すらいむ<span id="slime-hp">HP 50 / 50</span></button>
     </div>
     <div class = "command">
       <button type="button" class="battle">こうげき</button>
@@ -31,13 +40,16 @@
       <button type="button" class="item" aria-expanded="false" aria-controls="item-panel">あいてむ</button>
     </div>
     <section id="item-panel" class="item-panel" aria-label="あいてむらん" hidden>
-      <button type="button" id="use-yakuso" class="item-choice" data-item="yakuso" draggable="true" aria-label="やくそうをつかう。HPを10かいふく。みずいろのそざいにドラッグしてごうせい">
+      <button type="button" id="sword-item" class="item-choice" data-item="sword" draggable="true" aria-label="けん">
+        <img src="static/sword_shortsword_brown.png" alt="" class="item-image" draggable="false">
+      </button>
+      <button type="button" id="use-yakuso" class="item-choice" data-item="yakuso" draggable="true" aria-label="やくそうをつかう。HPを3かいふく。みずいろのそざいにドラッグしてごうせい">
         <img src="static/yakuso_01.png" alt="" class="item-image" draggable="false">
       </button>
       <button type="button" id="blue-material" class="item-choice" data-item="material" draggable="true" aria-label="みずいろのそざい。たんどくではつかえない。やくそうにドラッグしてごうせい">
         <img src="static/portion_01_lightblue_01.png" alt="" class="item-image" draggable="false">
       </button>
-      <button type="button" id="use-potion" class="item-choice" data-item="potion" aria-label="かいふくやくをつかう。HPを20かいふく" hidden>
+      <button type="button" id="use-potion" class="item-choice" data-item="potion" aria-label="かいふくやくをつかう。HPを10かいふく" hidden>
         <img src="static/portion_01_yellowgreen.png" alt="" class="item-image" draggable="false">
       </button>
     </section>
@@ -48,6 +60,45 @@
       <button type="button" id="menu-restart">やりなおす</button>
       <button type="button" id="menu-monster-book">モンスターずかん</button>
       <button type="button" id="menu-item-book">アイテムずかん</button>
+    </div>
+    <div id="monster-book" hidden>
+      <div id="monster-list">
+        <button type="button" id="monster-select-slime" aria-label="すらいむ">
+          <img src="static/character_monster_slime_green.png" alt="" class="monster-book-image">
+        </button>
+      </div>
+      <section id="monster-detail" aria-labelledby="monster-name" hidden>
+        <h3 id="monster-name">すらいむ</h3>
+        <img src="static/character_monster_slime_green.png" alt="すらいむ" class="monster-book-image">
+        <p>からだはまりょくでできている。ぶつりこうげきにつよく、ひによわい。</p>
+      </section>
+      <button type="button" id="monster-book-back">もどる</button>
+    </div>
+    <div id="item-book" hidden>
+      <div id="item-book-list">
+        <button type="button" aria-label="けん" data-description="あたえるだめーじがあがる。">
+          <img src="static/sword_shortsword_brown.png" alt="" class="item-book-image">
+        </button>
+        <button type="button" aria-label="やくそう" data-description="HPを3かいふくする。">
+          <img src="static/yakuso_01.png" alt="" class="item-book-image">
+        </button>
+        <button type="button" aria-label="みず" data-description="ただのみず。">
+          <img src="static/portion_01_lightblue_01.png" alt="" class="item-book-image">
+        </button>
+        <button type="button" aria-label="かいふくやく" data-item="potion" data-description="HPを10かいふくする。">
+          <img src="static/portion_01_yellowgreen.png" alt="" class="item-book-image">
+        </button>
+        <button type="button" aria-label="ポーション" data-item="mpPotion" data-description="MPをかいふくする。">
+          <img src="static/portion_01_pink.png" alt="" class="item-book-image">
+        </button>
+      </div>
+      <section id="item-book-detail" aria-labelledby="item-book-name" hidden>
+        <h3 id="item-book-name"></h3>
+        <img id="item-book-detail-image" src="static/yakuso_01.png" alt="" class="item-book-image">
+        <p id="item-book-description"></p>
+        <button type="button" id="item-book-acquisition" hidden>にゅうしゅほうほう</button>
+      </section>
+      <button type="button" id="item-book-back">もどる</button>
     </div>
     <div id="restart-confirmation" role="group" aria-labelledby="restart-question" hidden>
       <p id="restart-question">やりなおしますか？</p>
