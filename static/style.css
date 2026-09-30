@@ -14,15 +14,18 @@ body {
   color: #ffffff;
   background-color: #000000;
 }
-.title{
-  font-size: 30px;
-  margin-top: 100px;
-}
-.slime{
+.slime-display {
+  position: relative;
   width: 120px;
-  height:auto;
+  margin: 235px auto 0;
+}
+.slime {
   display: block;
-  margin: 100px auto 0;
+  width: 100%;
+  height: auto;
+}
+.slime-display.defeated {
+  visibility: hidden;
 }
 .menu{
   padding: 0;
@@ -147,15 +150,74 @@ body {
   font: inherit;
   cursor: pointer;
 }
-#slime-target:not([hidden]) {
+.spell-options:not([hidden]) {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+#slime-target:not([hidden]) {
+  display: block;
   width: 100%;
-  gap: 24px;
+  text-align: left;
+}
+#slime-hp,
+#slime-name {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 22px;
+  white-space: nowrap;
 }
 #slime-hp {
-  white-space: nowrap;
+  bottom: calc(100% + 8px);
+}
+#slime-name {
+  bottom: calc(100% + 42px);
+}
+#game-clear {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  width: min(500px, calc(100vw - 32px));
+  height: min(260px, calc(100dvh - 32px));
+  max-width: none;
+  max-height: none;
+  margin: auto;
+  padding: 36px;
+  border: 0;
+  background: #000 url('25351742.png') center / 100% 100% no-repeat;
+  color: #fff;
+  font-family: inherit;
+  text-align: center;
+  overflow-y: auto;
+}
+#game-clear[open] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+#game-clear::backdrop {
+  background: rgb(0 0 0 / 75%);
+}
+#game-clear h1 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 38px);
+}
+#game-clear button {
+  padding: 10px 24px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+#game-clear button:focus-visible {
+  outline: none;
+  text-decoration: underline;
 }
 #equipment-screen,
 #menu-screen {
@@ -260,6 +322,9 @@ body {
   height: auto;
   margin: 24px auto;
 }
+#monster-detail p:last-of-type {
+  margin-top: 80px;
+}
 #monster-list .monster-book-image {
   width: 64px;
   height: 64px;
@@ -274,6 +339,9 @@ body {
 }
 .item-book-image.undiscovered {
   opacity: 0.3;
+}
+#item-book-hint {
+  cursor: pointer;
 }
 #menu-options button {
   display: block;
@@ -335,13 +403,9 @@ body {
 }
 
 @media (max-width: 600px) {
-  .title {
-    font-size: 20px;
-    margin-top: 100px;
-  }
-  .slime {
+  .slime-display {
     width: 100px;
-    margin-top: 125px;
+    margin-top: 245px;
   }
   .menu {
     width: 30px;
