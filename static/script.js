@@ -54,6 +54,19 @@ const itemBookImage = document.getElementById('item-book-detail-image');
 const itemBookBack = document.getElementById('item-book-back');
 const itemBookEntries = itemBookList.querySelectorAll('button');
 let selectedItemBookEntry = itemBookEntries[0];
+const menuWeaponBook = document.getElementById('menu-weapon-book');
+const weaponBook = document.getElementById('weapon-book');
+const weaponBookList = document.getElementById('weapon-book-list');
+const weaponBookDetail = document.getElementById('weapon-book-detail');
+const weaponBookName = document.getElementById('weapon-book-name');
+const weaponBookDescription = document.getElementById('weapon-book-description');
+const weaponBookImage = document.getElementById('weapon-book-detail-image');
+const weaponBookInspect = document.getElementById('weapon-book-inspect');
+const weaponBookImageButton = document.getElementById('weapon-book-image-button');
+let inspectingWeapon = false;
+const weaponBookBack = document.getElementById('weapon-book-back');
+const weaponBookEntries = weaponBookList.querySelectorAll('button');
+let selectedWeaponBookEntry = weaponBookEntries[0];
 const monsterList = document.getElementById('monster-list');
 const monsterDetail = document.getElementById('monster-detail');
 const monsterSelectSlime = document.getElementById('monster-select-slime');
@@ -86,7 +99,7 @@ function updateItemBook() {
   Object.entries(inventory).forEach(([item, count]) => {
     if (count > 0) discoveredItems.add(item);
   });
-  itemBookEntries.forEach((button) => {
+  [...itemBookEntries, ...weaponBookEntries].forEach((button) => {
     button.querySelector('img').classList.toggle('undiscovered', isUndiscoveredItem(button));
   });
 }
@@ -478,6 +491,8 @@ restartButton.addEventListener('click', () => {
   turn = 'menu';
   menuOptions.hidden = false;
   monsterBook.hidden = true;
+  itemBook.hidden = true;
+  weaponBook.hidden = true;
   menuTitle.textContent = 'めにゅー';
   restartConfirmation.hidden = true;
   menuStatus.textContent = '';
@@ -579,6 +594,100 @@ function closeItemBook() {
 
 itemBookBack.addEventListener('click', closeItemBook);
 
+menuWeaponBook.addEventListener('click', () => {
+  if (turn !== 'menu') return;
+  turn = 'weapon-book';
+  menuOptions.hidden = true;
+  menuStatus.textContent = '';
+  menuTitle.textContent = 'ぶきずかん';
+  weaponBook.hidden = false;
+  weaponBookList.hidden = false;
+  weaponBookDetail.hidden = true;
+  weaponBookEntries[0].focus();
+});
+
+weaponBookEntries.forEach((button) => {
+  button.addEventListener('click', () => {
+    if (turn !== 'weapon-book') return;
+    selectedWeaponBookEntry = button;
+    weaponBookName.textContent = button.getAttribute('aria-label');
+    const undiscovered = isUndiscoveredItem(button);
+    setWeaponInspection(false);
+    weaponBookInspect.disabled = undiscovered;
+    weaponBookInspect.hidden = undiscovered;
+    weaponBookImage.classList.toggle('undiscovered', undiscovered);
+    weaponBookImage.src = button.querySelector('img').getAttribute('src');
+    weaponBookImage.alt = weaponBookName.textContent;
+    weaponBookList.hidden = true;
+    weaponBookDetail.hidden = false;
+    menuTitle.hidden = true;
+    menuScreen.setAttribute('aria-labelledby', 'weapon-book-name');
+    turn = 'weapon-book-detail';
+    weaponBookBack.focus();
+  });
+});
+
+function setWeaponInspection(active) {
+  inspectingWeapon = active;
+  weaponBookInspect.textContent = active ? 'おわる' : 'しらべる';
+  weaponBookInspect.setAttribute('aria-pressed', String(active));
+  weaponBookImageButton.disabled = !active;
+  weaponBookImageButton.setAttribute('aria-label', `${weaponBookName.textContent}をしらべる`);
+  weaponBookDescription.textContent = active
+    ? 'しらべたいところをおしてください。'
+    : isUndiscoveredItem(selectedWeaponBookEntry)
+      ? 'まだてにいれていません'
+      : selectedWeaponBookEntry.dataset.description;
+}
+
+weaponBookInspect.addEventListener('click', () => {
+  if (turn !== 'weapon-book-detail' || isUndiscoveredItem(selectedWeaponBookEntry)) return;
+  setWeaponInspection(!inspectingWeapon);
+});
+
+weaponBookImageButton.addEventListener('click', (event) => {
+  if (turn !== 'weapon-book-detail' || !inspectingWeapon) return;
+  if (selectedWeaponBookEntry.dataset.item === 'magicSword') {
+    weaponBookDescription.textContent = 'まりょくをおびている';
+    return;
+  }
+  const bounds = weaponBookImage.getBoundingClientRect();
+  const size = Math.min(bounds.width, bounds.height);
+  if (size === 0) return;
+  const x = (event.clientX - bounds.left - (bounds.width - size) / 2) / size;
+  const y = (event.clientY - bounds.top - (bounds.height - size) / 2) / size;
+  // The ordinary sword's blue stone occupies this region of the square image.
+  const onStone = event.detail === 0 || (x >= 0.68 && x <= 0.82 && y >= 0.68 && y <= 0.82);
+  // The blade runs diagonally from the upper-left tip toward the guard.
+  const onBlade = x >= 0 && y >= 0 && x + y <= 1.22 && Math.abs(x - y) <= 0.19;
+  weaponBookDescription.textContent = onStone
+    ? 'まりょくをためられるあおいいし。'
+    : onBlade
+      ? 'はさきはするどい'
+      : 'とくになにもみつからなかった。';
+});
+
+function closeWeaponBook() {
+  if (turn === 'weapon-book-detail') {
+    setWeaponInspection(false);
+    weaponBookDetail.hidden = true;
+    weaponBookList.hidden = false;
+    menuTitle.hidden = false;
+    menuScreen.setAttribute('aria-labelledby', 'menu-title');
+    turn = 'weapon-book';
+    selectedWeaponBookEntry.focus();
+    return;
+  }
+  if (turn !== 'weapon-book') return;
+  weaponBook.hidden = true;
+  menuOptions.hidden = false;
+  menuTitle.textContent = 'めにゅー';
+  turn = 'menu';
+  menuWeaponBook.focus();
+}
+
+weaponBookBack.addEventListener('click', closeWeaponBook);
+
 menuRestart.addEventListener('click', () => {
   if (turn !== 'menu') return;
   turn = 'confirming-restart';
@@ -594,6 +703,7 @@ function closeMenu() {
   menuTitle.hidden = false;
   menuScreen.setAttribute('aria-labelledby', 'menu-title');
   itemBook.hidden = true;
+  weaponBook.hidden = true;
   monsterBook.hidden = true;
   restartConfirmation.hidden = true;
   restartButton.setAttribute('aria-expanded', 'false');
@@ -607,6 +717,7 @@ menuScreen.addEventListener('cancel', (event) => {
   if (turn === 'confirming-restart') cancelRestart();
   else if (turn === 'monster-book' || turn === 'monster-detail') closeMonsterBook();
   else if (turn === 'item-book' || turn === 'item-book-detail') closeItemBook();
+  else if (turn === 'weapon-book' || turn === 'weapon-book-detail') closeWeaponBook();
   else closeMenu();
 });
 

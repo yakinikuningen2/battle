@@ -223,37 +223,39 @@ body {
   font-size: 22px;
   text-align: center;
 }
-#menu-screen:has(#monster-book:not([hidden]), #item-book:not([hidden])) {
+#menu-screen:has(#monster-book:not([hidden]), #item-book:not([hidden]), #weapon-book:not([hidden])) {
   width: min(760px, calc(100vw - 32px));
   min-height: min(560px, calc(100dvh - 32px));
   max-height: calc(100dvh - 32px);
   overflow-y: auto;
 }
-#menu-screen:has(#monster-book:not([hidden]), #item-book:not([hidden])) #menu-close {
+#menu-screen:has(#monster-book:not([hidden]), #item-book:not([hidden]), #weapon-book:not([hidden])) #menu-close {
   display: none;
 }
-#menu-screen:has(#monster-book:not([hidden]) #monster-list:not([hidden]), #item-book:not([hidden]) #item-book-list:not([hidden])) {
+#menu-screen:has(#monster-book:not([hidden]) #monster-list:not([hidden]), #item-book:not([hidden]) #item-book-list:not([hidden]), #weapon-book:not([hidden]) #weapon-book-list:not([hidden])) {
   width: min(460px, calc(100vw - 32px));
   min-height: 0;
   padding: 28px;
 }
-#menu-screen[open]:has(#monster-book:not([hidden]) #monster-detail:not([hidden]), #item-book:not([hidden]) #item-book-detail:not([hidden])) {
+#menu-screen[open]:has(#monster-book:not([hidden]) #monster-detail:not([hidden]), #item-book:not([hidden]) #item-book-detail:not([hidden]), #weapon-book:not([hidden]) #weapon-book-detail:not([hidden])) {
   display: flex;
   flex-direction: column;
   height: min(560px, calc(100dvh - 32px));
 }
 #monster-book:not([hidden]):has(#monster-detail:not([hidden])),
-#item-book:not([hidden]):has(#item-book-detail:not([hidden])) {
+#item-book:not([hidden]):has(#item-book-detail:not([hidden])),
+#weapon-book:not([hidden]):has(#weapon-book-detail:not([hidden])) {
   display: flex;
   flex-direction: column;
   flex: 1 0 auto;
 }
 #monster-book:has(#monster-detail:not([hidden])) #monster-book-back,
-#item-book:has(#item-book-detail:not([hidden])) #item-book-back {
+#item-book:has(#item-book-detail:not([hidden])) #item-book-back,
+#weapon-book:has(#weapon-book-detail:not([hidden])) #weapon-book-back {
   align-self: center;
   margin-top: auto;
 }
-#menu-screen:has(#monster-book:not([hidden]), #item-book:not([hidden])) #menu-status:empty {
+#menu-screen:has(#monster-book:not([hidden]), #item-book:not([hidden]), #weapon-book:not([hidden])) #menu-status:empty {
   display: none;
 }
 #menu-screen::backdrop {
@@ -319,7 +321,38 @@ body {
   height: 209px;
   object-fit: contain;
 }
-#item-book-description {
+#menu-screen #weapon-book-image-button {
+  display: block;
+  width: 209px;
+  height: 209px;
+  max-width: 100%;
+  padding: 0;
+  margin: 24px auto;
+}
+#menu-screen #weapon-book-image-button:disabled {
+  cursor: default;
+}
+#weapon-book-detail #weapon-book-detail-image {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  object-fit: contain;
+}
+#weapon-book-detail {
+  position: relative;
+}
+#weapon-book-inspect {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+}
+#menu-screen #weapon-book-inspect:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+#item-book-description,
+#weapon-book-description {
   margin-top: 64px;
 }
 #monster-detail p:last-of-type {
@@ -331,7 +364,8 @@ body {
   object-fit: contain;
   margin: 8px auto;
 }
-#item-book-list .item-book-image {
+#item-book-list .item-book-image,
+#weapon-book-list .item-book-image {
   width: 48px;
   height: 48px;
   object-fit: contain;

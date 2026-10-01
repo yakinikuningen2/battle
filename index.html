@@ -85,6 +85,7 @@
     <div id="menu-options">
       <button type="button" id="menu-monster-book">もんすたーずかん</button>
       <button type="button" id="menu-item-book">あいてむずかん</button>
+      <button type="button" id="menu-weapon-book">ぶきずかん</button>
       <button type="button" id="menu-restart">やりなおす</button>
     </div>
     <div id="monster-book" hidden>
@@ -96,20 +97,17 @@
       <section id="monster-detail" aria-labelledby="monster-name" hidden>
         <h3 id="monster-name">すらいむ</h3>
         <img src="static/character_monster_slime_green.png" alt="すらいむ" class="monster-book-image">
-        <p>とくい：かみなり　にがて：ひ</p>
+        <p>にがて：ひ</p>
         <p>からだはまりょくでできている。ぶつりこうげきにつよい。</p>
       </section>
       <button type="button" id="monster-book-back">もどる</button>
     </div>
     <div id="item-book" hidden>
       <div id="item-book-list">
-        <button type="button" aria-label="けん" data-description="あたえるだめーじがあがる。">
-          <img src="static/tsurugi_bronze_blue.png" alt="" class="item-book-image">
-        </button>
         <button type="button" aria-label="やくそう" data-description="HPを10かいふくする。">
           <img src="static/yakuso_02.png" alt="" class="item-book-image">
         </button>
-        <button type="button" aria-label="みず" data-description="ただのみず。なにかとちょうごうできそうだ。">
+        <button type="button" aria-label="みず" data-description="なにかとちょうごうできるみず。">
           <img src="static/portion_01_lightblue_01.png" alt="" class="item-book-image">
         </button>
         <button type="button" aria-label="かいふくやく" data-item="potion" data-description="HPを20かいふくする。">
@@ -118,9 +116,6 @@
         <button type="button" aria-label="まほうやく" data-item="mpPotion" data-description="MPを20かいふくする">
           <img src="static/portion_01_pink.png" alt="" class="item-book-image">
         </button>
-        <button type="button" aria-label="まけん" data-description="きょうれつなぶつりこうげきをあたえる" data-item="magicSword">
-          <img src="static/tsurugi_bronze_sabi_blue.png" alt="" class="item-book-image">
-        </button>
       </div>
       <section id="item-book-detail" aria-labelledby="item-book-name" hidden>
         <h3 id="item-book-name"></h3>
@@ -128,6 +123,25 @@
         <p id="item-book-description"></p>
       </section>
       <button type="button" id="item-book-back">もどる</button>
+    </div>
+    <div id="weapon-book" hidden>
+      <div id="weapon-book-list">
+        <button type="button" aria-label="けん" data-description="あたえるだめーじがあがる。">
+          <img src="static/tsurugi_bronze_blue.png" alt="" class="item-book-image">
+        </button>
+        <button type="button" aria-label="まけん" data-description="まりょくをおびたけん。ふつうのけんよりこうげきのだめーじがあがる" data-item="magicSword">
+          <img src="static/tsurugi_bronze_sabi_blue.png" alt="" class="item-book-image">
+        </button>
+      </div>
+      <section id="weapon-book-detail" aria-labelledby="weapon-book-name" hidden>
+        <button type="button" id="weapon-book-inspect" aria-pressed="false">しらべる</button>
+        <h3 id="weapon-book-name"></h3>
+        <button type="button" id="weapon-book-image-button" aria-label="ぶきをしらべる" disabled>
+          <img id="weapon-book-detail-image" src="static/tsurugi_bronze_blue.png" alt="" class="item-book-image">
+        </button>
+        <p id="weapon-book-description" role="status" aria-live="polite"></p>
+      </section>
+      <button type="button" id="weapon-book-back">もどる</button>
     </div>
     <div id="restart-confirmation" role="group" aria-labelledby="restart-question" hidden>
       <p id="restart-question">やりなおしますか？</p>
