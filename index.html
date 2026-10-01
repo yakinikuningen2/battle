@@ -55,9 +55,6 @@
         <button type="button" id="spell-thunder">さんだー（MP 10）</button>
         <button type="button" id="spell-fire">ふぁいあ（MP 20）</button>
       </div>
-      <div id="defeat-restart" hidden>
-        <button type="button" id="defeat-restart-yes">やりなおす</button>
-      </div>
       <button type="button" id="slime-target" hidden disabled>すらいむ</button>
     </div>
     <div class = "command">
@@ -72,10 +69,7 @@
       <button type="button" id="use-yakuso" class="item-choice" data-item="yakuso" draggable="true" aria-label="やくそうをつかう。HPを10かいふく。みずいろのそざいにドラッグしてごうせい">
         <img src="static/yakuso_02.png" alt="" class="item-image" draggable="false">
       </button>
-      <button type="button" id="magic-herb" class="item-choice" data-item="magicHerb" draggable="true" aria-label="まりょくのくさをつかう。MPを10かいふく。みずとごうせい" hidden>
-        <img src="static/yakuso_01.png" alt="" class="item-image" draggable="false">
-      </button>
-      <button type="button" id="blue-material" class="item-choice" data-item="material" draggable="true" aria-label="みず。たんどくではつかえない。やくそうやまりょくのくさとごうせい">
+      <button type="button" id="blue-material" class="item-choice" data-item="material" draggable="true" aria-label="みず。たんどくではつかえない。やくそうやまけんとごうせい">
         <img src="static/portion_01_lightblue_01.png" alt="" class="item-image" draggable="false">
       </button>
       <button type="button" id="use-potion" class="item-choice" data-item="potion" aria-label="かいふくやくをつかう。HPを20かいふく" hidden>
@@ -115,19 +109,16 @@
         <button type="button" aria-label="やくそう" data-description="HPを10かいふくする。">
           <img src="static/yakuso_02.png" alt="" class="item-book-image">
         </button>
-        <button type="button" aria-label="まりょくのくさ" data-item="magicHerb" data-description="MPを10かいふくする" data-hint="まほうのちからをおびたけんと、やくそうをくみあわせてみよう。">
-          <img src="static/yakuso_01.png" alt="" class="item-book-image">
-        </button>
         <button type="button" aria-label="みず" data-description="ただのみず。なにかとちょうごうできそうだ。">
           <img src="static/portion_01_lightblue_01.png" alt="" class="item-book-image">
         </button>
-        <button type="button" aria-label="かいふくやく" data-item="potion" data-description="HPを20かいふくする。" data-hint="やくそうとみずをちょうごうしてみよう。">
+        <button type="button" aria-label="かいふくやく" data-item="potion" data-description="HPを20かいふくする。">
           <img src="static/portion_01_yellowgreen.png" alt="" class="item-book-image">
         </button>
-        <button type="button" aria-label="まほうやく" data-item="mpPotion" data-description="MPを20かいふくする" data-hint="まりょくのくさとみずをちょうごうしてみよう。">
+        <button type="button" aria-label="まほうやく" data-item="mpPotion" data-description="MPを20かいふくする">
           <img src="static/portion_01_pink.png" alt="" class="item-book-image">
         </button>
-        <button type="button" aria-label="まけん" data-description="きょうれつなぶつりこうげきをあたえる" data-item="magicSword" data-hint="けんでなんどかこうげきしてみよう。">
+        <button type="button" aria-label="まけん" data-description="きょうれつなぶつりこうげきをあたえる" data-item="magicSword">
           <img src="static/tsurugi_bronze_sabi_blue.png" alt="" class="item-book-image">
         </button>
       </div>
@@ -135,8 +126,6 @@
         <h3 id="item-book-name"></h3>
         <img id="item-book-detail-image" src="static/yakuso_02.png" alt="" class="item-book-image">
         <p id="item-book-description"></p>
-        <button type="button" id="item-book-hint" aria-controls="item-book-hint-text" aria-expanded="false" hidden>ひんと</button>
-        <p id="item-book-hint-text" hidden></p>
       </section>
       <button type="button" id="item-book-back">もどる</button>
     </div>
@@ -150,9 +139,13 @@
     <p id="menu-status" role="status" aria-live="polite"></p>
     <button type="button" id="menu-close">とじる</button>
   </dialog>
-  <dialog id="game-clear" aria-labelledby="game-clear-title">
+  <dialog id="game-clear" class="result-screen" aria-labelledby="game-clear-title">
     <h1 id="game-clear-title">GAME CLEAR!</h1>
     <button type="button" id="game-clear-restart">やりなおす</button>
+  </dialog>
+  <dialog id="game-over" class="result-screen" aria-labelledby="game-over-title">
+    <h1 id="game-over-title">GAME OVER</h1>
+    <button type="button" id="game-over-restart">やりなおす</button>
   </dialog>
 </body>
 </html>

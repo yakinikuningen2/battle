@@ -105,10 +105,6 @@ body {
   margin: 18px;
   cursor: pointer;
 }
-.command button.selected-command {
-  font-size: 24px;
-}
-
 .textbox, .message{
   width: 150%;
   height: 140.625px; /* 隣の画像の表示高: 250px × 1440 / 2560 */
@@ -133,10 +129,6 @@ body {
 }
 .message p{
   margin: 0;
-}
-.message:has(#defeat-restart:not([hidden])) {
-  font-size: 18px;
-  gap: 0;
 }
 .message button:focus-visible {
   outline: 2px solid white;
@@ -175,7 +167,7 @@ body {
 #slime-name {
   bottom: calc(100% + 42px);
 }
-#game-clear {
+.result-screen {
   box-sizing: border-box;
   position: fixed;
   inset: 0;
@@ -192,21 +184,21 @@ body {
   text-align: center;
   overflow-y: auto;
 }
-#game-clear[open] {
+.result-screen[open] {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 24px;
 }
-#game-clear::backdrop {
+.result-screen::backdrop {
   background: rgb(0 0 0 / 75%);
 }
-#game-clear h1 {
+.result-screen h1 {
   margin: 0;
   font-size: clamp(24px, 5vw, 38px);
 }
-#game-clear button {
+.result-screen button {
   padding: 10px 24px;
   border: 0;
   background: transparent;
@@ -215,7 +207,7 @@ body {
   font-size: 22px;
   cursor: pointer;
 }
-#game-clear button:focus-visible {
+.result-screen button:focus-visible {
   outline: none;
   text-decoration: underline;
 }
@@ -322,6 +314,14 @@ body {
   height: auto;
   margin: 24px auto;
 }
+#item-book-detail .item-book-image {
+  width: auto;
+  height: 209px;
+  object-fit: contain;
+}
+#item-book-description {
+  margin-top: 64px;
+}
 #monster-detail p:last-of-type {
   margin-top: 80px;
 }
@@ -339,9 +339,6 @@ body {
 }
 .item-book-image.undiscovered {
   opacity: 0.3;
-}
-#item-book-hint {
-  cursor: pointer;
 }
 #menu-options button {
   display: block;

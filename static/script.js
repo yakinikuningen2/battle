@@ -1,12 +1,12 @@
 const messageText = document.getElementById('message-text');
-const defeatRestart = document.getElementById('defeat-restart');
-const defeatRestartYes = document.getElementById('defeat-restart-yes');
 const slimeTarget = document.getElementById('slime-target');
 const slimeHp = document.getElementById('slime-hp');
 const slimeDisplay = document.querySelector('.slime-display');
 const messagePanel = document.querySelector('.message');
 const gameClear = document.getElementById('game-clear');
 const gameClearRestart = document.getElementById('game-clear-restart');
+const gameOver = document.getElementById('game-over');
+const gameOverRestart = document.getElementById('game-over-restart');
 const battleButton = document.querySelector('.battle');
 const itemButton = document.querySelector('.item');
 const magicButton = document.querySelector('.magic');
@@ -50,8 +50,6 @@ const itemBookList = document.getElementById('item-book-list');
 const itemBookDetail = document.getElementById('item-book-detail');
 const itemBookName = document.getElementById('item-book-name');
 const itemBookDescription = document.getElementById('item-book-description');
-const itemBookHint = document.getElementById('item-book-hint');
-const itemBookHintText = document.getElementById('item-book-hint-text');
 const itemBookImage = document.getElementById('item-book-detail-image');
 const itemBookBack = document.getElementById('item-book-back');
 const itemBookEntries = itemBookList.querySelectorAll('button');
@@ -61,7 +59,6 @@ const monsterDetail = document.getElementById('monster-detail');
 const monsterSelectSlime = document.getElementById('monster-select-slime');
 const itemPanel = document.getElementById('item-panel');
 const useYakusoButton = document.getElementById('use-yakuso');
-const magicHerbButton = document.getElementById('magic-herb');
 const materialButton = document.getElementById('blue-material');
 const usePotionButton = document.getElementById('use-potion');
 const useMpPotionButton = document.getElementById('use-mp-potion');
@@ -74,14 +71,14 @@ const equipmentSlots = {
   feet: document.getElementById('equipped-feet'),
 };
 const slotNames = { weapon: 'ぶき', head: 'あたま', body: 'からだ', feet: 'あし' };
-const itemChoices = [swordButton, useYakusoButton, magicHerbButton, materialButton, usePotionButton, useMpPotionButton];
-const inventory = { yakuso: 1, magicHerb: 0, material: 1, potion: 0, mpPotion: 0, sword: 0 };
+const itemChoices = [swordButton, useYakusoButton, materialButton, usePotionButton, useMpPotionButton];
+const inventory = { yakuso: 1, material: 1, potion: 0, mpPotion: 0, sword: 0 };
 const equipment = { swordSlot: 'head' };
 const sword = { attacks: 0, isMagic: false };
 const discoveredItems = new Set();
 
 function isUndiscoveredItem(button) {
-  return ['potion', 'mpPotion', 'magicSword', 'magicHerb'].includes(button.dataset.item)
+  return ['potion', 'mpPotion', 'magicSword'].includes(button.dataset.item)
     && !discoveredItems.has(button.dataset.item);
 }
 
@@ -143,9 +140,11 @@ function performAction(message) {
       if (player.hp === 0) {
         turn = 'finished';
         messageText.textContent = 'ゆうしゃは たおれてしまった！';
-        restartButton.disabled = false;
-        defeatRestart.hidden = false;
-        defeatRestartYes.focus();
+        setTimeout(() => {
+          restartButton.disabled = false;
+          gameOver.showModal();
+          gameOverRestart.focus();
+        }, 1200);
         return;
       }
       turn = 'player';
@@ -170,6 +169,10 @@ function endTargetSelection() {
 
 function startTargetSelection(action) {
   if (turn !== 'player') return;
+  if (choosingTarget && selectedAction === action) {
+    slimeTarget.focus();
+    return;
+  }
   endTargetSelection();
   closeItems();
   if (spells[action] && player.mp < spells[action].mpCost) {
@@ -182,7 +185,6 @@ function startTargetSelection(action) {
   (spells[action] ? magicButton : battleButton).classList.add('selected-command');
   slimeTarget.disabled = false;
   slimeTarget.hidden = false;
-  messageText.textContent = '';
   messageText.hidden = true;
   slimeTarget.focus();
 }
@@ -191,9 +193,7 @@ battleButton.addEventListener('click', () => startTargetSelection('attack'));
 magicButton.addEventListener('click', () => {
   if (turn !== 'player') return;
   if (!spellOptions.hidden) {
-    endTargetSelection();
-    messageText.textContent = '';
-    magicButton.focus();
+    spellThunder.focus();
     return;
   }
   endTargetSelection();
@@ -201,7 +201,6 @@ magicButton.addEventListener('click', () => {
   spellOptions.hidden = false;
   magicButton.classList.add('selected-command');
   magicButton.setAttribute('aria-expanded', 'true');
-  messageText.textContent = '';
   messageText.hidden = true;
   spellThunder.focus();
 });
@@ -222,7 +221,7 @@ slimeTarget.addEventListener('click', () => {
     performAction(`ゆうしゃの ${spell.name}！ すらいむに ${spell.damage}のだめーじ！`);
     return;
   }
-  const damage = equipment.swordSlot === 'weapon' ? (sword.isMagic ? 10 : 5) : 1;
+  const damage = equipment.swordSlot === 'weapon' ? (sword.isMagic ? 5 : 3) : 1;
   slime.hp = Math.max(0, slime.hp - damage);
   if (equipment.swordSlot === 'weapon' && !sword.isMagic) {
     sword.attacks += 1;
@@ -269,21 +268,20 @@ function closeItems() {
 
 function cancelItems() {
   closeItems();
-  messageText.textContent = '';
   itemButton.focus();
 }
 
 itemButton.addEventListener('click', () => {
   if (turn !== 'player') return;
   if (!itemPanel.hidden) {
-    cancelItems();
+    const firstItem = itemChoices.find((button) => !button.hidden);
+    if (firstItem) firstItem.focus();
     return;
   }
   endTargetSelection();
   itemPanel.hidden = false;
   itemButton.classList.add('selected-command');
   itemButton.setAttribute('aria-expanded', 'true');
-  messageText.textContent = '';
   const firstItem = itemChoices.find((button) => !button.hidden);
   if (firstItem) firstItem.focus();
 });
@@ -299,9 +297,8 @@ function useHealingItem(item, name, amount) {
   if (turn !== 'player' || itemPanel.hidden || draggedItem || !inventory[item]) return;
   inventory[item] -= 1;
   updateInventory();
-  const healing = Math.min(amount, player.maxHp - player.hp);
-  player.hp += healing;
-  performAction(`${name}を つかった！ HPが ${healing} かいふくした！`);
+  player.hp = Math.min(player.maxHp, player.hp + amount);
+  performAction(`${name}を つかった！ HPが ${amount} かいふくした！`);
 }
 
 useYakusoButton.addEventListener('click', () => useHealingItem('yakuso', 'やくそう', 10));
@@ -310,12 +307,10 @@ function useMpItem(item, name, amount) {
   if (turn !== 'player' || itemPanel.hidden || draggedItem || !inventory[item]) return;
   inventory[item] -= 1;
   updateInventory();
-  const restored = Math.min(amount, player.maxMp - player.mp);
-  player.mp += restored;
-  performAction(`${name}を つかった！ MPが ${restored} かいふくした！`);
+  player.mp = Math.min(player.maxMp, player.mp + amount);
+  performAction(`${name}を つかった！ MPが ${amount} かいふくした！`);
 }
 
-magicHerbButton.addEventListener('click', () => useMpItem('magicHerb', 'まりょくのくさ', 10));
 useMpPotionButton.addEventListener('click', () => useMpItem('mpPotion', 'まほうやく', 20));
 
 function clearItemDrag() {
@@ -328,34 +323,27 @@ function canCombine(target) {
   const potionRecipe = inventory.yakuso > 0 && inventory.material > 0
     && ((draggedItem === 'yakuso' && target === 'material')
       || (draggedItem === 'material' && target === 'yakuso'));
-  const mpPotionRecipe = inventory.magicHerb > 0 && inventory.material > 0
-    && ((draggedItem === 'magicHerb' && target === 'material')
-      || (draggedItem === 'material' && target === 'magicHerb'));
   const magicSwordInItems = draggedItem === 'sword' && inventory.sword > 0;
   const magicSwordEquipped = draggedItem === 'equipped-sword'
     && !equipmentScreen.hidden && equipment.swordSlot !== null;
-  const magicHerbRecipe = inventory.yakuso > 0 && sword.isMagic
-    && ((draggedItem === 'yakuso' && target === 'sword' && inventory.sword > 0)
-      || ((magicSwordInItems || magicSwordEquipped) && target === 'yakuso'));
-  return potionRecipe || mpPotionRecipe || magicHerbRecipe;
+  const mpPotionRecipe = inventory.material > 0 && sword.isMagic
+    && ((draggedItem === 'material' && target === 'sword' && inventory.sword > 0)
+      || ((magicSwordInItems || magicSwordEquipped) && target === 'material'));
+  return potionRecipe || mpPotionRecipe;
 }
 
-function combineMagicSwordAndHerb() {
-  inventory.yakuso -= 1;
-  inventory.magicHerb += 1;
-  if (draggedItem === 'equipped-sword') {
-    equipment.swordSlot = null;
-    inventory.sword += 1;
-  }
+function combineMagicSwordAndWater() {
+  inventory.material -= 1;
+  inventory.mpPotion += 1;
   sword.isMagic = false;
   sword.attacks = 0;
   clearItemDrag();
   updateEquipment();
   updateInventory();
-  magicHerbButton.focus();
+  useMpPotionButton.focus();
 }
 
-[useYakusoButton, magicHerbButton, materialButton, swordButton].forEach((button) => {
+[useYakusoButton, materialButton, swordButton].forEach((button) => {
   button.addEventListener('dragstart', (event) => {
     if (turn !== 'player' || itemPanel.hidden || !inventory[button.dataset.item]) {
       event.preventDefault();
@@ -377,16 +365,15 @@ function combineMagicSwordAndHerb() {
     event.preventDefault();
     if (!canCombine(button.dataset.item)) return;
     if (button.dataset.item === 'sword' || draggedItem === 'sword' || draggedItem === 'equipped-sword') {
-      combineMagicSwordAndHerb();
+      combineMagicSwordAndWater();
       return;
     }
-    const isMpPotion = button.dataset.item === 'magicHerb' || draggedItem === 'magicHerb';
-    inventory[isMpPotion ? 'magicHerb' : 'yakuso'] -= 1;
+    inventory.yakuso -= 1;
     inventory.material -= 1;
-    inventory[isMpPotion ? 'mpPotion' : 'potion'] += 1;
+    inventory.potion += 1;
     clearItemDrag();
     updateInventory();
-    (isMpPotion ? useMpPotionButton : usePotionButton).focus();
+    usePotionButton.focus();
   });
   button.addEventListener('dragend', clearItemDrag);
 });
@@ -405,16 +392,16 @@ equippedSword.addEventListener('dragend', clearItemDrag);
 
 equippedSword.addEventListener('dragover', (event) => {
   if (turn !== 'player' || equipmentScreen.hidden || equipment.swordSlot === null || !sword.isMagic
-    || draggedItem !== 'yakuso' || itemPanel.hidden || inventory.yakuso === 0) return;
+    || draggedItem !== 'material' || itemPanel.hidden || inventory.material === 0) return;
   event.preventDefault();
   event.dataTransfer.dropEffect = 'move';
 });
 
 equippedSword.addEventListener('drop', (event) => {
   if (turn !== 'player' || equipmentScreen.hidden || equipment.swordSlot === null || !sword.isMagic
-    || draggedItem !== 'yakuso' || itemPanel.hidden || inventory.yakuso === 0) return;
+    || draggedItem !== 'material' || itemPanel.hidden || inventory.material === 0) return;
   event.preventDefault();
-  combineMagicSwordAndHerb();
+  combineMagicSwordAndWater();
 });
 
 function canUnequipSword() {
@@ -560,10 +547,6 @@ itemBookEntries.forEach((button) => {
     itemBookName.textContent = button.getAttribute('aria-label');
     const undiscovered = isUndiscoveredItem(button);
     itemBookDescription.textContent = undiscovered ? 'まだてにいれていません' : button.dataset.description;
-    itemBookHint.hidden = !undiscovered;
-    itemBookHint.setAttribute('aria-expanded', 'false');
-    itemBookHintText.textContent = button.dataset.hint || '';
-    itemBookHintText.hidden = true;
     itemBookImage.classList.toggle('undiscovered', undiscovered);
     itemBookImage.src = button.querySelector('img').getAttribute('src');
     itemBookImage.alt = itemBookName.textContent;
@@ -574,12 +557,6 @@ itemBookEntries.forEach((button) => {
     turn = 'item-book-detail';
     itemBookBack.focus();
   });
-});
-
-itemBookHint.addEventListener('click', () => {
-  if (turn !== 'item-book-detail' || itemBookHint.hidden) return;
-  itemBookHintText.hidden = !itemBookHintText.hidden;
-  itemBookHint.setAttribute('aria-expanded', String(!itemBookHintText.hidden));
 });
 
 function closeItemBook() {
@@ -653,8 +630,7 @@ restartYes.addEventListener('click', () => {
   menuClose.focus();
 });
 
-defeatRestartYes.addEventListener('click', () => {
-  if (turn !== 'finished' || defeatRestart.hidden) return;
+gameOverRestart.addEventListener('click', () => {
   resetBattle();
   battleButton.focus();
 });
@@ -666,7 +642,7 @@ gameClearRestart.addEventListener('click', () => {
 
 function resetBattle() {
   if (gameClear.open) gameClear.close();
-  defeatRestart.hidden = true;
+  if (gameOver.open) gameOver.close();
   restartButton.disabled = false;
   endTargetSelection();
   closeItems();
@@ -675,7 +651,7 @@ function resetBattle() {
   slime.hp = slime.maxHp;
   slimeDisplay.classList.remove('defeated');
   player.mp = 0;
-  Object.assign(inventory, { yakuso: 1, magicHerb: 0, material: 1, potion: 0, mpPotion: 0, sword: 0 });
+  Object.assign(inventory, { yakuso: 1, material: 1, potion: 0, mpPotion: 0, sword: 0 });
   discoveredItems.clear();
   updateItemBook();
   equipment.swordSlot = 'head';
