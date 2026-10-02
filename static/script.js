@@ -31,9 +31,6 @@ function closeEquipment() {
 }
 
 equipmentClose.addEventListener('click', closeEquipment);
-const restartConfirmation = document.getElementById('restart-confirmation');
-const restartYes = document.getElementById('restart-yes');
-const restartNo = document.getElementById('restart-no');
 let turnBeforeRestart = 'player';
 const menuScreen = document.getElementById('menu-screen');
 const menuOptions = document.getElementById('menu-options');
@@ -104,6 +101,8 @@ function updateItemBook() {
   });
 }
 let draggedItem = null;
+let touchDrag = null;
+let suppressedDragClick = null;
 const commandButtons = document.querySelectorAll('.command button');
 const hpText = document.getElementById('player-hp');
 const mpText = document.getElementById('player-mp');
@@ -111,6 +110,7 @@ const player = { hp: 20, maxHp: 20, mp: 0, maxMp: 20 };
 const slime = { hp: 50, maxHp: 50 };
 let choosingTarget = false;
 let selectedAction = null;
+let spellReturnTimer = null;
 const spells = {
   thunder: { name: 'さんだー', mpCost: 10, damage: 10 },
   fire: { name: 'ふぁいあ', mpCost: 20, damage: 99 },
@@ -169,6 +169,8 @@ function performAction(message) {
 }
 
 function endTargetSelection() {
+  clearTimeout(spellReturnTimer);
+  spellReturnTimer = null;
   choosingTarget = false;
   selectedAction = null;
   spellOptions.hidden = true;
@@ -180,6 +182,27 @@ function endTargetSelection() {
   slimeTarget.hidden = true;
 }
 
+function openSpellSelection(action = 'thunder') {
+  if (turn !== 'player') return;
+  endTargetSelection();
+  closeItems();
+  spellOptions.hidden = false;
+  magicButton.classList.add('selected-command');
+  magicButton.setAttribute('aria-expanded', 'true');
+  messageText.hidden = true;
+  (action === 'fire' ? spellFire : spellThunder).focus();
+}
+
+function showInsufficientMp(action) {
+  endTargetSelection();
+  messageText.textContent = 'MPが たりない！';
+  magicButton.focus();
+  spellReturnTimer = setTimeout(() => {
+    spellReturnTimer = null;
+    openSpellSelection(action);
+  }, 1200);
+}
+
 function startTargetSelection(action) {
   if (turn !== 'player') return;
   if (choosingTarget && selectedAction === action) {
@@ -189,8 +212,7 @@ function startTargetSelection(action) {
   endTargetSelection();
   closeItems();
   if (spells[action] && player.mp < spells[action].mpCost) {
-    messageText.textContent = 'MPが たりない！';
-    magicButton.focus();
+    showInsufficientMp(action);
     return;
   }
   selectedAction = action;
@@ -209,13 +231,7 @@ magicButton.addEventListener('click', () => {
     spellThunder.focus();
     return;
   }
-  endTargetSelection();
-  closeItems();
-  spellOptions.hidden = false;
-  magicButton.classList.add('selected-command');
-  magicButton.setAttribute('aria-expanded', 'true');
-  messageText.hidden = true;
-  spellThunder.focus();
+  openSpellSelection();
 });
 spellThunder.addEventListener('click', () => startTargetSelection('thunder'));
 spellFire.addEventListener('click', () => startTargetSelection('fire'));
@@ -225,8 +241,7 @@ slimeTarget.addEventListener('click', () => {
   if (spells[selectedAction]) {
     const spell = spells[selectedAction];
     if (player.mp < spell.mpCost) {
-      endTargetSelection();
-      messageText.textContent = 'MPが たりない！';
+      showInsufficientMp(selectedAction);
       return;
     }
     player.mp -= spell.mpCost;
@@ -250,6 +265,12 @@ slimeTarget.addEventListener('click', () => {
 
 document.addEventListener('keydown', (event) => {
   if (menuScreen.open) return;
+  if (event.key === 'Escape' && spellReturnTimer !== null) {
+    endTargetSelection();
+    messageText.textContent = 'まほうを やめた！';
+    magicButton.focus();
+    return;
+  }
   if (event.key === 'Escape' && !equipmentScreen.hidden) {
     closeEquipment();
     return;
@@ -314,8 +335,6 @@ function useHealingItem(item, name, amount) {
   performAction(`${name}を つかった！ HPが ${amount} かいふくした！`);
 }
 
-useYakusoButton.addEventListener('click', () => useHealingItem('yakuso', 'やくそう', 10));
-usePotionButton.addEventListener('click', () => useHealingItem('potion', 'かいふくやく', 20));
 function useMpItem(item, name, amount) {
   if (turn !== 'player' || itemPanel.hidden || draggedItem || !inventory[item]) return;
   inventory[item] -= 1;
@@ -324,23 +343,37 @@ function useMpItem(item, name, amount) {
   performAction(`${name}を つかった！ MPが ${amount} かいふくした！`);
 }
 
+useYakusoButton.addEventListener('click', () => useHealingItem('yakuso', 'やくそう', 10));
+usePotionButton.addEventListener('click', () => useHealingItem('potion', 'かいふくやく', 20));
 useMpPotionButton.addEventListener('click', () => useMpItem('mpPotion', 'まほうやく', 20));
 
 function clearItemDrag() {
+  const gesture = touchDrag;
+  touchDrag = null;
+  if (gesture) {
+    gesture.ghost?.remove();
+    if (gesture.source.hasPointerCapture(gesture.pointerId)) {
+      gesture.source.releasePointerCapture(gesture.pointerId);
+    }
+  }
   draggedItem = null;
-  itemChoices.forEach((button) => button.classList.remove('dragging', 'drop-target'));
+  itemChoices.forEach((button) => button.classList.remove('dragging'));
+  equippedSword.classList.remove('dragging');
 }
 
 function canCombine(target) {
   if (turn !== 'player' || itemPanel.hidden) return false;
+  const source = draggedItem;
   const potionRecipe = inventory.yakuso > 0 && inventory.material > 0
-    && ((draggedItem === 'yakuso' && target === 'material')
-      || (draggedItem === 'material' && target === 'yakuso'));
-  const magicSwordInItems = draggedItem === 'sword' && inventory.sword > 0;
-  const magicSwordEquipped = draggedItem === 'equipped-sword'
+    && ((source === 'yakuso' && target === 'material')
+      || (source === 'material' && target === 'yakuso'));
+  const magicSwordInItems = source === 'sword' && inventory.sword > 0;
+  const magicSwordEquipped = source === 'equipped-sword'
     && !equipmentScreen.hidden && equipment.swordSlot !== null;
   const mpPotionRecipe = inventory.material > 0 && sword.isMagic
-    && ((draggedItem === 'material' && target === 'sword' && inventory.sword > 0)
+    && ((source === 'material' && target === 'sword' && inventory.sword > 0)
+      || (source === 'material' && target === 'equipped-sword'
+        && !equipmentScreen.hidden && equipment.swordSlot !== null)
       || ((magicSwordInItems || magicSwordEquipped) && target === 'material'));
   return potionRecipe || mpPotionRecipe;
 }
@@ -356,9 +389,25 @@ function combineMagicSwordAndWater() {
   useMpPotionButton.focus();
 }
 
+function combineItems(target) {
+  if (!canCombine(target)) return false;
+  const source = draggedItem;
+  if (target === 'sword' || target === 'equipped-sword' || source === 'sword' || source === 'equipped-sword') {
+    combineMagicSwordAndWater();
+    return true;
+  }
+  inventory.yakuso -= 1;
+  inventory.material -= 1;
+  inventory.potion += 1;
+  clearItemDrag();
+  updateInventory();
+  usePotionButton.focus();
+  return true;
+}
+
 [useYakusoButton, materialButton, swordButton].forEach((button) => {
   button.addEventListener('dragstart', (event) => {
-    if (turn !== 'player' || itemPanel.hidden || !inventory[button.dataset.item]) {
+    if (touchDrag || turn !== 'player' || itemPanel.hidden || !inventory[button.dataset.item]) {
       event.preventDefault();
       return;
     }
@@ -371,28 +420,16 @@ function combineMagicSwordAndWater() {
     if (!canCombine(button.dataset.item)) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
-    button.classList.add('drop-target');
   });
-  button.addEventListener('dragleave', () => button.classList.remove('drop-target'));
   button.addEventListener('drop', (event) => {
     event.preventDefault();
-    if (!canCombine(button.dataset.item)) return;
-    if (button.dataset.item === 'sword' || draggedItem === 'sword' || draggedItem === 'equipped-sword') {
-      combineMagicSwordAndWater();
-      return;
-    }
-    inventory.yakuso -= 1;
-    inventory.material -= 1;
-    inventory.potion += 1;
-    clearItemDrag();
-    updateInventory();
-    usePotionButton.focus();
+    combineItems(button.dataset.item);
   });
   button.addEventListener('dragend', clearItemDrag);
 });
 
 equippedSword.addEventListener('dragstart', (event) => {
-  if (turn !== 'player' || equipmentScreen.hidden || !equipment.swordSlot) {
+  if (touchDrag || turn !== 'player' || equipmentScreen.hidden || !equipment.swordSlot) {
     event.preventDefault();
     return;
   }
@@ -463,8 +500,18 @@ function updateEquipment() {
 
 function canPlaceSword(slotName) {
   if (turn !== 'player' || equipmentScreen.hidden || equipment.swordSlot === slotName) return false;
-  return (draggedItem === 'sword' && !itemPanel.hidden && inventory.sword > 0 && equipment.swordSlot === null)
-    || (draggedItem === 'equipped-sword' && equipment.swordSlot !== null);
+  const source = draggedItem;
+  return (source === 'sword' && !itemPanel.hidden && inventory.sword > 0 && equipment.swordSlot === null)
+    || (source === 'equipped-sword' && equipment.swordSlot !== null);
+}
+
+function placeSword(slotName) {
+  if (!canPlaceSword(slotName)) return;
+  if (draggedItem === 'sword') inventory.sword -= 1;
+  equipment.swordSlot = slotName;
+  clearItemDrag();
+  updateInventory();
+  updateEquipment();
 }
 
 Object.entries(equipmentSlots).forEach(([slotName, slot]) => {
@@ -474,18 +521,99 @@ Object.entries(equipmentSlots).forEach(([slotName, slot]) => {
     event.dataTransfer.dropEffect = 'move';
   });
   slot.addEventListener('drop', (event) => {
-    if (!canPlaceSword(slotName)) return;
     event.preventDefault();
-    if (draggedItem === 'sword') inventory.sword -= 1;
-    equipment.swordSlot = slotName;
-    clearItemDrag();
-    updateInventory();
-    updateEquipment();
+    placeSword(slotName);
   });
 });
 
+function resolveItemDropTarget(target) {
+  if (!target) return null;
+  const item = target.closest('.item-choice, #equipped-sword');
+  if (item && !item.hidden) {
+    const itemName = item === equippedSword ? 'equipped-sword' : item.dataset.item;
+    if (canCombine(itemName)) {
+      return { element: item, drop: () => combineItems(itemName) };
+    }
+  }
+  const slot = target.closest('.equipment-slots, .armor-slot');
+  const slotEntry = Object.entries(equipmentSlots).find(([, element]) => element === slot);
+  if (slotEntry && canPlaceSword(slotEntry[0])) {
+    return { element: slot, drop: () => placeSword(slotEntry[0]) };
+  }
+  const panel = target.closest('#item-panel, .message');
+  if (panel && canUnequipSword() && (panel === itemPanel || itemPanel.hidden)) {
+    return { element: panel, drop: moveSwordToInventory };
+  }
+  return null;
+}
+
+// Touch dragging uses the same recipes and equipment rules as mouse dragging.
+[useYakusoButton, materialButton, swordButton, equippedSword].forEach((source) => {
+  source.addEventListener('pointerdown', (event) => {
+    suppressedDragClick = null;
+    if (event.pointerType === 'mouse' || !event.isPrimary || touchDrag || turn !== 'player') return;
+    const item = source === equippedSword ? 'equipped-sword' : source.dataset.item;
+    if (item === 'equipped-sword'
+      ? equipmentScreen.hidden || equipment.swordSlot === null
+      : itemPanel.hidden || !inventory[item]) return;
+    touchDrag = {
+      pointerId: event.pointerId, source, item,
+      startX: event.clientX, startY: event.clientY, active: false,
+    };
+    source.setPointerCapture(event.pointerId);
+  });
+
+  source.addEventListener('pointermove', (event) => {
+    const gesture = touchDrag;
+    if (!gesture || event.pointerId !== gesture.pointerId) return;
+    if (!gesture.active) {
+      if (Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY) < 8) return;
+      gesture.active = true;
+      draggedItem = gesture.item;
+      source.classList.add('dragging');
+      gesture.ghost = document.createElement('img');
+      gesture.ghost.src = (source === equippedSword ? source : source.querySelector('img')).src;
+      gesture.ghost.className = 'touch-drag-ghost';
+      gesture.ghost.alt = '';
+      gesture.ghost.setAttribute('aria-hidden', 'true');
+      document.body.append(gesture.ghost);
+    }
+    event.preventDefault();
+    gesture.ghost.style.left = `${event.clientX}px`;
+    gesture.ghost.style.top = `${event.clientY}px`;
+  });
+
+  source.addEventListener('pointerup', (event) => {
+    const gesture = touchDrag;
+    if (!gesture || event.pointerId !== gesture.pointerId) return;
+    if (gesture.active) {
+      event.preventDefault();
+      suppressedDragClick = { source, until: Date.now() + 800 };
+      resolveItemDropTarget(document.elementFromPoint(event.clientX, event.clientY))?.drop();
+    }
+    clearItemDrag();
+  });
+
+  ['pointercancel', 'lostpointercapture'].forEach((eventName) => {
+    source.addEventListener(eventName, (event) => {
+      if (touchDrag?.pointerId === event.pointerId) clearItemDrag();
+    });
+  });
+});
+
+document.addEventListener('click', (event) => {
+  if (suppressedDragClick && Date.now() < suppressedDragClick.until
+    && suppressedDragClick.source.contains(event.target)) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    suppressedDragClick = null;
+  }
+}, true);
+
 restartButton.addEventListener('click', () => {
   if (turn !== 'player' && turn !== 'finished') return;
+  clearTimeout(spellReturnTimer);
+  spellReturnTimer = null;
   turnBeforeRestart = turn;
   clearItemDrag();
   turn = 'menu';
@@ -494,7 +622,6 @@ restartButton.addEventListener('click', () => {
   itemBook.hidden = true;
   weaponBook.hidden = true;
   menuTitle.textContent = 'めにゅー';
-  restartConfirmation.hidden = true;
   menuStatus.textContent = '';
   restartButton.setAttribute('aria-expanded', 'true');
   menuScreen.showModal();
@@ -690,11 +817,8 @@ weaponBookBack.addEventListener('click', closeWeaponBook);
 
 menuRestart.addEventListener('click', () => {
   if (turn !== 'menu') return;
-  turn = 'confirming-restart';
-  menuOptions.hidden = true;
-  menuStatus.textContent = '';
-  restartConfirmation.hidden = false;
-  restartNo.focus();
+  resetBattle();
+  battleButton.focus();
 });
 
 function closeMenu() {
@@ -705,7 +829,6 @@ function closeMenu() {
   itemBook.hidden = true;
   weaponBook.hidden = true;
   monsterBook.hidden = true;
-  restartConfirmation.hidden = true;
   restartButton.setAttribute('aria-expanded', 'false');
   turn = turnBeforeRestart;
   restartButton.focus();
@@ -714,31 +837,10 @@ function closeMenu() {
 menuClose.addEventListener('click', closeMenu);
 menuScreen.addEventListener('cancel', (event) => {
   event.preventDefault();
-  if (turn === 'confirming-restart') cancelRestart();
-  else if (turn === 'monster-book' || turn === 'monster-detail') closeMonsterBook();
+  if (turn === 'monster-book' || turn === 'monster-detail') closeMonsterBook();
   else if (turn === 'item-book' || turn === 'item-book-detail') closeItemBook();
   else if (turn === 'weapon-book' || turn === 'weapon-book-detail') closeWeaponBook();
   else closeMenu();
-});
-
-function cancelRestart() {
-  if (turn !== 'confirming-restart') return;
-  restartConfirmation.hidden = true;
-  menuOptions.hidden = false;
-  turn = 'menu';
-  menuRestart.focus();
-}
-
-restartNo.addEventListener('click', cancelRestart);
-restartYes.addEventListener('click', () => {
-  if (turn !== 'confirming-restart') return;
-  restartConfirmation.hidden = true;
-  menuOptions.hidden = false;
-  resetBattle();
-  turnBeforeRestart = 'player';
-  turn = 'menu';
-  menuStatus.textContent = 'はじめから やりなおしました！';
-  menuClose.focus();
 });
 
 gameOverRestart.addEventListener('click', () => {
@@ -752,6 +854,8 @@ gameClearRestart.addEventListener('click', () => {
 });
 
 function resetBattle() {
+  if (menuScreen.open) closeMenu();
+  turnBeforeRestart = 'player';
   if (gameClear.open) gameClear.close();
   if (gameOver.open) gameOver.close();
   restartButton.disabled = false;
@@ -774,6 +878,7 @@ function resetBattle() {
   commandButtons.forEach((button) => { button.disabled = false; });
   updateStatus();
   updateInventory();
+  window.scrollTo(0, 0);
 }
 
 updateStatus();

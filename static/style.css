@@ -4,6 +4,7 @@
 }
 html,
 body {
+  -webkit-tap-highlight-color: transparent;
   overflow: hidden;
   height: 100%;
   overscroll-behavior: none;
@@ -13,6 +14,17 @@ body {
   text-align: center;
   color: #ffffff;
   background-color: #000000;
+}
+button,
+[role="button"] {
+  touch-action: manipulation;
+}
+button {
+  user-select: none;
+  -webkit-user-select: none;
+}
+button:focus:not(:focus-visible) {
+  outline: none;
 }
 .slime-display {
   position: relative;
@@ -297,16 +309,12 @@ body {
 .equipment-slots,
 .armor-slot {
   min-height: 64px;
+  cursor: pointer;
 }
 #equipped-sword {
   position: relative;
   top: 16px;
   cursor: pointer;
-}
-.menu-choices {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
 }
 .monster-book-image,
 .item-book-image {
@@ -406,12 +414,14 @@ body {
 .item-panel:not([hidden]) {
   display: flex;
   align-items: center;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 .item-panel .item-choice[hidden] {
   display: none;
 }
-.item-choice.dragging {
+.item-choice.dragging,
+#equipped-sword.dragging {
   opacity: 0.5;
 }
 .item-panel .item-choice {
@@ -422,6 +432,24 @@ body {
   padding: 4px;
   text-align: left;
   font-size: 22px;
+  min-width: 52px;
+  min-height: 52px;
+}
+.item-choice[draggable="true"],
+#equipped-sword {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.touch-drag-ghost {
+  position: fixed;
+  z-index: 20;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 .item-image {
   width: 48px;
@@ -433,14 +461,127 @@ body {
   outline-offset: 2px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 950px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  body {
+    box-sizing: border-box;
+    min-height: 100dvh;
+    margin: 0;
+    padding: 1px 12px 24px;
+  }
   .slime-display {
     width: 100px;
-    margin-top: 245px;
+    margin: clamp(88px, 16dvh, 125px) auto 24px;
   }
   .menu {
-    width: 30px;
-    top: 15px;
-    right: 15px;
+    width: 48px;
+    height: 48px;
+    top: 12px;
+    right: 12px;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "status"
+      "command"
+      "message";
+    grid-template-rows: auto 172px minmax(148px, auto);
+    gap: 8px;
+    width: min(100%, 500px);
+    height: auto;
+    margin: 0 auto;
+  }
+  .box,
+  .textbox {
+    display: none;
+  }
+  .player-status {
+    grid-area: status;
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    min-width: 0;
+    gap: 4px 12px;
+    font-size: clamp(16px, 4.5vw, 20px);
+  }
+  .player-name {
+    min-height: 44px;
+  }
+  .command {
+    grid-area: command;
+    position: static;
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 14px 20%;
+    background: #000 url('25351742.png') center / 100% 100% no-repeat;
+    font-size: 21px;
+  }
+  .command button {
+    min-height: 44px;
+    margin: 0;
+  }
+  .message,
+  .item-panel {
+    grid-area: message;
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    min-height: 148px;
+    background: #000 url('25351742.png') center / 100% 100% no-repeat;
+  }
+  .message {
+    padding: 20px 28px;
+    font-size: clamp(18px, 5vw, 22px);
+  }
+  .message button {
+    min-height: 44px;
+  }
+  .item-panel {
+    padding: 12px 20px;
+    align-content: center;
+  }
+  #equipment-screen {
+    position: fixed;
+    top: 12px;
+    bottom: auto;
+    left: 50%;
+    z-index: 5;
+    width: min(340px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    transform: translateX(-50%);
+  }
+  #menu-screen {
+    width: min(420px, calc(100vw - 24px));
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+  #menu-screen button,
+  #equipment-screen button {
+    min-height: 44px;
+  }
+  #menu-screen:has(#monster-book:not([hidden]), #item-book:not([hidden]), #weapon-book:not([hidden])) {
+    min-height: 0;
+  }
+  #item-book-description,
+  #weapon-book-description,
+  #monster-detail p:last-of-type {
+    margin-top: 24px;
   }
 }
