@@ -119,6 +119,81 @@ const spells = {
   fire: { name: 'ふぁいあ', mpCost: 20, damage: 99 },
 };
 let turn = 'player';
+const battleBgm = document.getElementById('battle-bgm');
+const bgmVolume = document.getElementById('bgm-volume');
+const bgmVolumeValue = document.getElementById('bgm-volume-value');
+const bgmMute = document.getElementById('bgm-mute');
+let bgmMuted = false;
+let bgmStoppedForResult = false;
+let bgmAudioContext = null;
+let bgmGain = null;
+
+function updateBgmVolume() {
+  const volume = Number(bgmVolume.value) / 100;
+  battleBgm.muted = bgmMuted || volume === 0;
+  // GainNode also supports volume control on mobile browsers.
+  if (bgmGain) {
+    battleBgm.volume = 1;
+    bgmGain.gain.value = bgmMuted ? 0 : volume;
+  } else {
+    battleBgm.volume = volume;
+  }
+  bgmVolumeValue.textContent = `${bgmVolume.value}%`;
+  bgmMute.setAttribute('aria-pressed', String(bgmMuted));
+  bgmMute.textContent = bgmMuted ? 'おとをだす' : 'むおん';
+}
+
+function prepareBgmAudio() {
+  // Local file previews use the media element directly to avoid file-origin restrictions.
+  if (bgmAudioContext || window.location.protocol === 'file:') return;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return;
+  try {
+    bgmAudioContext = new AudioContextClass();
+    bgmGain = bgmAudioContext.createGain();
+    const source = bgmAudioContext.createMediaElementSource(battleBgm);
+    source.connect(bgmGain);
+    bgmGain.connect(bgmAudioContext.destination);
+    updateBgmVolume();
+  } catch {
+    bgmGain = null;
+    bgmAudioContext?.close().catch(() => {});
+    bgmAudioContext = null;
+    updateBgmVolume();
+  }
+}
+
+function startBgm() {
+  if (bgmStoppedForResult) return;
+  prepareBgmAudio();
+  if (bgmAudioContext?.state === 'suspended') {
+    bgmAudioContext.resume().catch(() => {});
+  }
+  if (battleBgm.paused) {
+    battleBgm.play().then(() => {
+      if (bgmStoppedForResult) battleBgm.pause();
+    }).catch(() => {});
+  }
+}
+
+function stopBgm() {
+  bgmStoppedForResult = true;
+  battleBgm.pause();
+  battleBgm.currentTime = 0;
+  if (bgmAudioContext?.state === 'running') {
+    bgmAudioContext.suspend().catch(() => {});
+  }
+}
+
+// Start within a user gesture so PC and mobile autoplay policies allow playback.
+document.addEventListener('click', startBgm, { capture: true });
+document.addEventListener('keydown', startBgm, { capture: true });
+bgmVolume.addEventListener('input', updateBgmVolume);
+bgmMute.addEventListener('click', () => {
+  bgmMuted = !bgmMuted;
+  updateBgmVolume();
+});
+updateBgmVolume();
 
 function updateStatus() {
   hpText.textContent = player.hp;
@@ -139,6 +214,7 @@ function performAction(message) {
   setTimeout(() => {
     if (slime.hp === 0) {
       turn = 'finished';
+      stopBgm();
       messageText.textContent = 'すらいむを たおした！';
       slimeDisplay.classList.add('defeated');
       setTimeout(() => {
@@ -155,6 +231,7 @@ function performAction(message) {
     setTimeout(() => {
       if (player.hp === 0) {
         turn = 'finished';
+        stopBgm();
         messageText.textContent = 'ゆうしゃは たおれてしまった！';
         setTimeout(() => {
           restartButton.disabled = false;
@@ -878,6 +955,7 @@ gameClearRestart.addEventListener('click', () => {
 });
 
 function resetBattle() {
+  stopBgm();
   if (menuScreen.open) closeMenu();
   turnBeforeRestart = 'player';
   if (gameClear.open) gameClear.close();
@@ -903,6 +981,8 @@ function resetBattle() {
   updateStatus();
   updateInventory();
   window.scrollTo(0, 0);
+  bgmStoppedForResult = false;
+  startBgm();
 }
 
 updateStatus();

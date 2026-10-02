@@ -273,6 +273,37 @@ button:focus:not(:focus-visible) {
 #menu-screen::backdrop {
   background: rgb(0 0 0 / 75%);
 }
+#menu-screen {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+}
+.bgm-settings {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #fff;
+  font-size: 18px;
+}
+.bgm-volume-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#bgm-volume {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  accent-color: #fff;
+  touch-action: pan-y;
+}
+#bgm-volume-value {
+  min-width: 4ch;
+  text-align: right;
+}
+#bgm-volume:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
 #equipment-screen h2,
 #menu-screen h2 {
   margin: 0 0 24px;

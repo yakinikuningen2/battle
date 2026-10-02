@@ -8,6 +8,7 @@
   <script src="static/script.js" defer></script>
 </head>
 <body>
+  <audio id="battle-bgm" src="static/8bit_Lets-do-this.mp3" loop preload="auto"></audio>
   <div class="slime-display">
     <span id="slime-hp">HP 50 / 50</span>
     <span id="slime-name">すらいむ</span>
@@ -87,6 +88,14 @@
       <button type="button" id="menu-item-book">あいてむずかん</button>
       <button type="button" id="menu-weapon-book">ぶきずかん</button>
       <button type="button" id="menu-restart">やりなおす</button>
+      <section class="bgm-settings" aria-label="BGMのせってい">
+        <label for="bgm-volume">BGM おんりょう</label>
+        <div class="bgm-volume-row">
+          <input type="range" id="bgm-volume" min="0" max="100" step="1" value="50">
+          <output id="bgm-volume-value" for="bgm-volume">50%</output>
+        </div>
+        <button type="button" id="bgm-mute" aria-pressed="false">むおん</button>
+      </section>
     </div>
     <div id="monster-book" hidden>
       <div id="monster-list">
