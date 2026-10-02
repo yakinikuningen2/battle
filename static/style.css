@@ -316,6 +316,11 @@ button:focus:not(:focus-visible) {
   top: 16px;
   cursor: pointer;
 }
+.menu-choices {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+}
 .monster-book-image,
 .item-book-image {
   display: block;

@@ -31,6 +31,9 @@ function closeEquipment() {
 }
 
 equipmentClose.addEventListener('click', closeEquipment);
+const restartConfirmation = document.getElementById('restart-confirmation');
+const restartYes = document.getElementById('restart-yes');
+const restartNo = document.getElementById('restart-no');
 let turnBeforeRestart = 'player';
 const menuScreen = document.getElementById('menu-screen');
 const menuOptions = document.getElementById('menu-options');
@@ -622,6 +625,7 @@ restartButton.addEventListener('click', () => {
   itemBook.hidden = true;
   weaponBook.hidden = true;
   menuTitle.textContent = 'めにゅー';
+  restartConfirmation.hidden = true;
   menuStatus.textContent = '';
   restartButton.setAttribute('aria-expanded', 'true');
   menuScreen.showModal();
@@ -788,7 +792,7 @@ weaponBookImageButton.addEventListener('click', (event) => {
   // The blade runs diagonally from the upper-left tip toward the guard.
   const onBlade = x >= 0 && y >= 0 && x + y <= 1.22 && Math.abs(x - y) <= 0.19;
   weaponBookDescription.textContent = onStone
-    ? 'まりょくをためられるあおいいし。'
+    ? 'まりょくをためられそうなあおいいし。'
     : onBlade
       ? 'はさきはするどい'
       : 'とくになにもみつからなかった。';
@@ -817,6 +821,24 @@ weaponBookBack.addEventListener('click', closeWeaponBook);
 
 menuRestart.addEventListener('click', () => {
   if (turn !== 'menu') return;
+  turn = 'confirming-restart';
+  menuOptions.hidden = true;
+  menuStatus.textContent = '';
+  restartConfirmation.hidden = false;
+  restartNo.focus();
+});
+
+function cancelRestart() {
+  if (turn !== 'confirming-restart') return;
+  restartConfirmation.hidden = true;
+  menuOptions.hidden = false;
+  turn = 'menu';
+  menuRestart.focus();
+}
+
+restartNo.addEventListener('click', cancelRestart);
+restartYes.addEventListener('click', () => {
+  if (turn !== 'confirming-restart') return;
   resetBattle();
   battleButton.focus();
 });
@@ -829,6 +851,7 @@ function closeMenu() {
   itemBook.hidden = true;
   weaponBook.hidden = true;
   monsterBook.hidden = true;
+  restartConfirmation.hidden = true;
   restartButton.setAttribute('aria-expanded', 'false');
   turn = turnBeforeRestart;
   restartButton.focus();
@@ -837,7 +860,8 @@ function closeMenu() {
 menuClose.addEventListener('click', closeMenu);
 menuScreen.addEventListener('cancel', (event) => {
   event.preventDefault();
-  if (turn === 'monster-book' || turn === 'monster-detail') closeMonsterBook();
+  if (turn === 'confirming-restart') cancelRestart();
+  else if (turn === 'monster-book' || turn === 'monster-detail') closeMonsterBook();
   else if (turn === 'item-book' || turn === 'item-book-detail') closeItemBook();
   else if (turn === 'weapon-book' || turn === 'weapon-book-detail') closeWeaponBook();
   else closeMenu();
