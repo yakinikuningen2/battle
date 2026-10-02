@@ -869,7 +869,7 @@ weaponBookImageButton.addEventListener('click', (event) => {
   // The blade runs diagonally from the upper-left tip toward the guard.
   const onBlade = x >= 0 && y >= 0 && x + y <= 1.22 && Math.abs(x - y) <= 0.19;
   weaponBookDescription.textContent = onStone
-    ? 'まりょくをためられそうなあおいいし。'
+    ? 'けんできるとまりょくがたまるいし。'
     : onBlade
       ? 'はさきはするどい'
       : 'とくになにもみつからなかった。';
